@@ -62,6 +62,9 @@ install -Dpm 0755 %{_sourcedir}/%{_binaryname} %{buildroot}%{_bindir}/%{_binaryn
 
 
 %changelog
+* Tue Sep 09 2025 Binary package builder <builder@famillegratton.net> 1.21.03-0
+- new package built with tito
+
 * Thu Dec 19 2024 APK Builder <builder@famillegratton.net> 1.21.03-0
 - GO version bump (jean-francois@famillegratton.net)
 
