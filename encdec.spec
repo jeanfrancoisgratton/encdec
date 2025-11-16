@@ -12,7 +12,7 @@
 %define _build_id_links none
 %define _name   encdec
 %define _prefix /opt
-%define _version 1.21.03
+%define _version 1.30.00
 %define _rel 0
 #%define _arch aarch64
 %define _binaryname encdec
@@ -38,19 +38,19 @@ Encode and decode AES-256 strings and files
 
 %build
 cd %{_sourcedir}/%{_name}-%{_version}/src
-PATH=$PATH:/opt/go/bin go build -o %{_sourcedir}/%{_binaryname} .
-strip %{_sourcedir}/%{_binaryname}
+PATH=$PATH:/opt/go/bin CGO_ENABLED=0 go build -trimpath -ldflags="-s -w -buildid=" -o %{_sourcedir}/%{_binaryname} .
 
 %clean
 rm -rf $RPM_BUILD_ROOT
 
 %pre
-exit 0
+
 
 %install
 install -Dpm 0755 %{_sourcedir}/%{_binaryname} %{buildroot}%{_bindir}/%{_binaryname}
 
 %post
+BIN="%{_prefix}/bin/%{_binaryname}"
 
 %preun
 
@@ -58,7 +58,8 @@ install -Dpm 0755 %{_sourcedir}/%{_binaryname} %{buildroot}%{_bindir}/%{_binaryn
 
 %files
 %defattr(-,root,root,-)
-%{_bindir}/%{_binaryname}
+%attr(2755,root,root) %{_prefix}/bin/%{_binaryname}
+
 
 
 %changelog
