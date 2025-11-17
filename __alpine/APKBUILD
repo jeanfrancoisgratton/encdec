@@ -1,6 +1,6 @@
 # Maintainer: J.F. Gratton <jean-francois@famillegratton.net>
 # Packager: APK/DEB/RPM package builder <builder@famillegratton.net>
-pkgname=vaultreader
+pkgname=encdec
 pkgver=1.30.00
 pkgrel=0
 pkgdir=/data/packages
