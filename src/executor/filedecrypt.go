@@ -11,10 +11,14 @@ import (
 	"fmt"
 	"io"
 	"os"
+
+	ce "github.com/jeanfrancoisgratton/customError/v3"
+	hftx "github.com/jeanfrancoisgratton/helperFunctions/v4/terminalfx"
 )
 
-func DecodeFile(sourcefile, destfile string) error {
-	var err error = nil
+func DecodeFile(sourcefile, destfile string) *ce.CustomError {
+	//var err error = nil
+	var cerr *ce.CustomError = nil
 
 	if destfile == "" {
 		destfile = sourcefile + ".dec"
@@ -25,57 +29,57 @@ func DecodeFile(sourcefile, destfile string) error {
 	//	fmt.Printf("[DecodeFile] keep file ? %\n", Keep)
 	//	fmt.Printf("[DecodeFile] keep file ? % %\n", Quiet)
 	//}
-	if err = decode(sourcefile, destfile); err != nil {
-		return err
-	}
+	cerr = decode(sourcefile, destfile)
 
-	if !Keep {
-		if err = os.Remove(sourcefile); err != nil {
-			return err
+	if !Keep && cerr != nil {
+		if err := os.Remove(sourcefile); err != nil {
+			cerr = &ce.CustomError{Title: "Error removing the source file", Message: err.Error()}
 		}
-		err = os.Rename(destfile, sourcefile)
+		if err := os.Rename(destfile, sourcefile); err != nil {
+			cerr = &ce.CustomError{Title: "Error renaming the destination file", Message: err.Error()}
+		}
 	}
-
-	return err
+	return cerr
 }
 
-func decode(source, dest string) error {
+func decode(source, dest string) *ce.CustomError {
 	if PromptForKeys {
 		SecretKey = getSecretKey("Please enter a 32 bytes (characters) key: ")
 	}
 	if len(SecretKey) != 32 {
 		fmt.Printf("Current key is only %v bytes long. It needs to be of exactly 32 bytes. Aborting.\n", len(SecretKey))
-		os.Exit(1)
+		fmt.Println(hftx.InfoSign(fmt.Sprintf("%s %s", hftx.Red("ATTEMPTING TO"),
+			hftx.Yellow("decode the file with the default, hardcoded key"))))
 	}
 	if !Quiet {
-		fmt.Println("Decoding ", source)
+		fmt.Println(hftx.InProgressSign("Decoding " + source))
 	}
 	key := []byte(SecretKey)
 
 	// Create a new AES cipher block based on the provided encryption key
 	block, err := aes.NewCipher(key)
 	if err != nil {
-		return err
+		return &ce.CustomError{Title: "Error creating AES cipher", Message: err.Error()}
 	}
 
 	// Open the input file for reading
 	inFile, err := os.Open(source)
 	if err != nil {
-		return err
+		return &ce.CustomError{Title: "Error opening file", Message: err.Error()}
 	}
 	defer inFile.Close()
 
 	// Create the output file for writing the decrypted data
 	outFile, err := os.Create(dest)
 	if err != nil {
-		return err
+		return &ce.CustomError{Title: "Error creating file", Message: err.Error()}
 	}
 	defer outFile.Close()
 
 	// Read the IV (Initialization Vector) from the beginning of the input file
 	iv := make([]byte, aes.BlockSize)
 	if _, err := io.ReadFull(inFile, iv); err != nil {
-		return err
+		return &ce.CustomError{Title: "Error reading file", Message: err.Error()}
 	}
 
 	// Create a new CFB (Cipher Feedback) decrypter using the block cipher and IV
@@ -92,7 +96,7 @@ func decode(source, dest string) error {
 
 			// Write the decrypted chunk to the output file
 			if _, err := outFile.Write(buf[:n]); err != nil {
-				return err
+				return &ce.CustomError{Title: "Error writing file", Message: err.Error()}
 			}
 		}
 		// Check for the end of file
@@ -101,12 +105,13 @@ func decode(source, dest string) error {
 		}
 		// Handle other read errors
 		if err != nil {
-			return err
+			return &ce.CustomError{Title: "Error reading file", Message: err.Error()}
 		}
 	}
 
 	if !Quiet {
-		fmt.Printf("Succesfully decoded %s as %s\n", source, dest)
+		fmt.Println(hftx.InfoSign(fmt.Sprintf("Successfully decoded %s to %s",
+			hftx.Green(source), hftx.Green(dest))))
 	}
 	return nil
 }

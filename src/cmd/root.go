@@ -6,17 +6,19 @@ package cmd
 import (
 	"encdec/executor"
 	"fmt"
-	hf "github.com/jeanfrancoisgratton/helperFunctions"
-	"github.com/spf13/cobra"
 	"os"
 	"runtime"
+
+	ce "github.com/jeanfrancoisgratton/customError/v3"
+	hftx "github.com/jeanfrancoisgratton/helperFunctions/v4/terminalfx"
+	"github.com/spf13/cobra"
 )
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:     "encdec",
 	Short:   "Encode and decode a string or file to-from AES-256",
-	Version: hf.White(fmt.Sprintf("1.21.03-0-%s (2024.12.19)", runtime.GOARCH)),
+	Version: hftx.White(fmt.Sprintf("1.21.03-0-%s (2024.12.19)", runtime.GOARCH)),
 }
 
 var clCmd = &cobra.Command{
@@ -34,20 +36,27 @@ var encodeCmd = &cobra.Command{
 	Example: "encdec enc {[-f sourcefile [destfile]] | sourcestring}",
 	Short:   "Encrypts a string or a file",
 	Run: func(cmd *cobra.Command, args []string) {
-		if !executor.FileOps {
-			// encode a string
-			if executor.Quiet {
-				fmt.Printf("%s\n", executor.Encode(args[0]))
-			} else {
-				fmt.Printf("Encoded string is: %s\n\n", executor.Encode(args[0]))
-			}
-			os.Exit(0)
-		}
-		// encode a file
+		var cerr *ce.CustomError
+		result := ""
 		if len(args) < 1 {
-			fmt.Println("You need to specify the source filename")
+			fmt.Println("You need to specify the source (string or filename)")
 			os.Exit(1)
 		}
+		if !executor.FileOps {
+			// decode a string
+			result, cerr = executor.Encode(args[0])
+			if cerr != nil {
+				fmt.Println(cerr.Error())
+				os.Exit(3)
+			}
+			if !executor.Quiet {
+				result = fmt.Sprintf("Encoded string : %s\n", hftx.Green(result))
+			}
+			fmt.Println(result)
+			os.Exit(0)
+		}
+		// decode a file
+
 		dst := ""
 		if len(args) > 1 {
 			dst = args[1]
@@ -56,7 +65,7 @@ var encodeCmd = &cobra.Command{
 		}
 		if err := executor.EncodeFile(args[0], dst); err != nil {
 			fmt.Printf("Error encoding %s : %v", args[0], err)
-			os.Exit(2)
+			os.Exit(3)
 		}
 	},
 }
@@ -67,20 +76,27 @@ var decodeCmd = &cobra.Command{
 	Example: "encdec dec {[-f sourcefile [destfile]] | sourcestring}",
 	Short:   "Decrypts a string or a file",
 	Run: func(cmd *cobra.Command, args []string) {
+		var cerr *ce.CustomError
+		result := ""
+		if len(args) < 1 {
+			fmt.Println("You need to specify the source (string or filename)")
+			os.Exit(1)
+		}
 		if !executor.FileOps {
 			// decode a string
-			if executor.Quiet {
-				fmt.Printf("%s\n", executor.Decode(args[0]))
-			} else {
-				fmt.Printf("Decoded string is: %s\n\n", executor.Decode(args[0]))
+			result, cerr = executor.Decode(args[0])
+			if cerr != nil {
+				fmt.Println(cerr.Error())
+				os.Exit(2)
 			}
+			if !executor.Quiet {
+				result = fmt.Sprintf("Decoded string : %s\n", hftx.Green(result))
+			}
+			fmt.Println(result)
 			os.Exit(0)
 		}
 		// decode a file
-		if len(args) < 1 {
-			fmt.Println("You need to specify the source filename")
-			os.Exit(1)
-		}
+
 		dst := ""
 		if len(args) > 1 {
 			dst = args[1]
@@ -122,6 +138,7 @@ func changelog() {
 	fmt.Print(`
 VERSION		DATE			COMMENT
 -------		----			-------
+1.30.00		2025.11.15		GO version bump (1.25.4), major package and builddeps update. Added a forgotten error path
 1.21.03		2024.12.19		GO version bump (1.23.4)
 1.21.02		2024.08.13		Variables reshuffling
 1.21.01		2024.08.12		Inverted quiet-verbose switch

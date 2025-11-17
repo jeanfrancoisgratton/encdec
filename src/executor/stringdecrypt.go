@@ -5,28 +5,29 @@ import (
 	"crypto/cipher"
 	"encoding/base64"
 	"fmt"
-	"os"
+
+	ce "github.com/jeanfrancoisgratton/customError/v3"
 )
 
 // ref: https://www.golinuxcloud.com/golang-encrypt-decrypt/#Encryption
-func Decode(cryptedString string) string {
+func Decode(cryptedString string) (string, *ce.CustomError) {
 	if PromptForKeys {
 		SecretKey = getSecretKey("Please enter a 32 bytes (characters) key: ")
 	}
 	if len(SecretKey) != 32 {
-		fmt.Printf("Current key is only %v bytes long. It needs to be of exactly 32 bytes. Aborting.\n", len(SecretKey))
-		os.Exit(1)
+		return "", &ce.CustomError{Title: "Unable to decode", Message: fmt.Sprintf("Current key is only %v bytes long. It needs to be of exactly 32 bytes.",
+			len(SecretKey))}
 	}
 
 	key := []byte(SecretKey)
 	ciphertext, _ := base64.URLEncoding.DecodeString(cryptedString)
 	block, err := aes.NewCipher(key)
 	if err != nil {
-		panic(err)
+		return "", &ce.CustomError{Title: "Unable to decode", Message: err.Error()}
 	}
 
 	if len(ciphertext) < aes.BlockSize {
-		panic("ciphertext too short")
+		return "", &ce.CustomError{Title: "Unable to decode", Message: "ciphertext too short"}
 	}
 	iv := ciphertext[:aes.BlockSize]
 	ciphertext = ciphertext[aes.BlockSize:]
@@ -34,5 +35,5 @@ func Decode(cryptedString string) string {
 	stream := cipher.NewCFBDecrypter(block, iv)
 	stream.XORKeyStream(ciphertext, ciphertext)
 
-	return fmt.Sprintf("%s", ciphertext)
+	return fmt.Sprintf("%s", ciphertext), nil
 }
