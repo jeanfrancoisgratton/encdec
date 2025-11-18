@@ -63,6 +63,11 @@ BIN="%{_prefix}/bin/%{_binaryname}"
 
 
 %changelog
+* Mon Nov 17 2025 Binary package builder <builder@famillegratton.net> 1.30.00-1
+- update rev num as the builddeps got updated (jean-
+  francois@famillegratton.net)
+- updated builddeps (jean-francois@famillegratton.net)
+
 * Mon Nov 17 2025 Binary package builder <builder@famillegratton.net> 1.30.00-0
 - Completed proper error handling (jean-francois@famillegratton.net)
 - Fixed package name in abuild script (builder@famillegratton.net)
