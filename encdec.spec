@@ -63,6 +63,14 @@ BIN="%{_prefix}/bin/%{_binaryname}"
 
 
 %changelog
+* Mon Nov 17 2025 Binary package builder <builder@famillegratton.net> 1.30.00-0
+- Completed proper error handling (jean-francois@famillegratton.net)
+- Fixed package name in abuild script (builder@famillegratton.net)
+- apk fix (jean-francois@famillegratton.net)
+- interim commit (jean-francois@famillegratton.net)
+- Version bump (jean-francois@famillegratton.net)
+- removed github actions file, un-needed (jean-francois@famillegratton.net)
+
 * Tue Sep 09 2025 Binary package builder <builder@famillegratton.net> 1.21.03-0
 - new package built with tito
 
