@@ -31,7 +31,7 @@ func DecodeFile(sourcefile, destfile string) *ce.CustomError {
 	//}
 	cerr = decode(sourcefile, destfile)
 
-	if !Keep && cerr != nil {
+	if !Keep && cerr == nil {
 		if err := os.Remove(sourcefile); err != nil {
 			cerr = &ce.CustomError{Title: "Error removing the source file", Message: err.Error()}
 		}

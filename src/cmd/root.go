@@ -18,7 +18,7 @@ import (
 var rootCmd = &cobra.Command{
 	Use:     "encdec",
 	Short:   "Encode and decode a string or file to-from AES-256",
-	Version: hftx.White(fmt.Sprintf("1.21.03-0-%s (2024.12.19)", runtime.GOARCH)),
+	Version: hftx.White(fmt.Sprintf("1.30.00-%s (2025.11.17)", runtime.GOARCH)),
 }
 
 var clCmd = &cobra.Command{
@@ -138,7 +138,7 @@ func changelog() {
 	fmt.Print(`
 VERSION		DATE			COMMENT
 -------		----			-------
-1.30.00		2025.11.15		GO version bump (1.25.4), major package and builddeps update. Added a forgotten error path
+1.30.00		2025.11.17		GO version bump (1.25.4), major package and builddeps update. Added a forgotten error path
 1.21.03		2024.12.19		GO version bump (1.23.4)
 1.21.02		2024.08.13		Variables reshuffling
 1.21.01		2024.08.12		Inverted quiet-verbose switch
