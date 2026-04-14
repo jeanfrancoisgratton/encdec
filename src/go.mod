@@ -4,7 +4,6 @@ go 1.26.2
 
 require (
 	github.com/jeanfrancoisgratton/customError/v3 v3.0.0
-	github.com/jeanfrancoisgratton/helperFunctions/v4 v4.1.1
 	github.com/jeanfrancoisgratton/helperFunctions/v5 v5.0.2
 	github.com/spf13/cobra v1.10.2
 	golang.org/x/crypto v0.50.0

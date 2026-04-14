@@ -14,25 +14,22 @@ import (
 	"os"
 
 	ce "github.com/jeanfrancoisgratton/customError/v3"
-	hftx "github.com/jeanfrancoisgratton/helperFunctions/v4/terminalfx"
+	hftx "github.com/jeanfrancoisgratton/helperFunctions/v5/terminalfx"
 )
 
-func EncodeFile(sourcefile, destfile string) error {
+func EncodeFile(sourcefile, destfile string) *ce.CustomError {
 	var cerr *ce.CustomError = nil
 
 	if destfile == "" {
 		destfile = sourcefile + ".enc"
 	}
-	//if DEBUG {
-	//	fmt.Println("[EncodeFile] source file:", sourcefile)
-	//	fmt.Println("[EncodeFile] output file:", destfile)
-	//	fmt.Println("[EncodeFile] keep file?", Keep)
-	//	fmt.Println("[EncodeFile] quiesce output?", Quiet)
-	//}
 
-	cerr = encode(sourcefile, destfile)
 
-	if !Keep && cerr == nil {
+	if cerr = encode(sourcefile, destfile); cerr != nil {
+		return cerr
+	}
+
+	if !Keep {
 		if err := os.Remove(sourcefile); err != nil {
 			cerr = &ce.CustomError{Title: "Error removing the source file", Message: err.Error()}
 		}

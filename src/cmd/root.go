@@ -10,6 +10,7 @@ import (
 	"runtime"
 	"strings"
 
+	ce "github.com/jeanfrancoisgratton/customError/v3"
 	hftx "github.com/jeanfrancoisgratton/helperFunctions/v5/terminalfx"
 	"github.com/spf13/cobra"
 )
@@ -32,57 +33,72 @@ var clCmd = &cobra.Command{
 
 var encodeCmd = &cobra.Command{
 	Use:     "encode",
-	Aliases: []string{"enc", "encrypt"},
+	Aliases: []string{"enc"},
 	Example: "encdec enc {[-f sourcefile [destfile]] | sourcestring}",
-	Short:   "Encrypts a string or a file",
+	Short:   "Encodes a string or a file",
+	Args:    cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
+		var s string
+		var e *ce.CustomError
+
 		if !executor.FileOps {
 			// encode a string
+			s, e = executor.Encode(args[0])
+			if e != nil {
+				fmt.Println(e.Error())
+				os.Exit(1)
+			}
 			if executor.Quiet {
-				fmt.Printf("%s\n", executor.Encode(args[0]))
+				fmt.Println(s)
 			} else {
-				fmt.Printf("Encoded string is: %s\n\n", executor.Encode(args[0]))
+				fmt.Println("Encoded string is: %s", hftx.Green(s))
 			}
 			os.Exit(0)
 		}
+
 		// encode a file
-		if len(args) < 1 {
-			fmt.Println("You need to specify the source filename")
-			os.Exit(1)
-		}
+
 		dst := ""
 		if len(args) > 1 {
 			dst = args[1]
-		} else {
-			dst = ""
 		}
 		if err := executor.EncodeFile(args[0], dst); err != nil {
-			fmt.Printf("Error encoding %s : %v", args[0], err)
+			fmt.Println(err.Error())
 			os.Exit(2)
+		}
+		if !executor.Quiet {
+			fmt.Println("File " + args[0] + hftx.Green("encoded successfully"))
 		}
 	},
 }
 
 var decodeCmd = &cobra.Command{
 	Use:     "decode",
-	Aliases: []string{"dec", "decrypt"},
+	Aliases: []string{"dec"},
 	Example: "encdec dec {[-f sourcefile [destfile]] | sourcestring}",
-	Short:   "Decrypts a string or a file",
+	Short:   "Decodes a string or a file",
+	Args:    cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
+		var s string
+		var e *ce.CustomError
+
 		if !executor.FileOps {
 			// decode a string
+			s, e = executor.Encode(args[0])
+			if e != nil {
+				fmt.Println(e.Error())
+				os.Exit(1)
+			}
 			if executor.Quiet {
-				fmt.Printf("%s\n", executor.Decode(args[0]))
+				fmt.Println(s)
 			} else {
-				fmt.Printf("Decoded string is: %s\n\n", executor.Decode(args[0]))
+				fmt.Println("Decoded string is: %s", hftx.Green(s))
 			}
 			os.Exit(0)
 		}
+
 		// decode a file
-		if len(args) < 1 {
-			fmt.Println("You need to specify the source filename")
-			os.Exit(1)
-		}
+
 		dst := ""
 		if len(args) > 1 {
 			dst = args[1]
@@ -90,8 +106,11 @@ var decodeCmd = &cobra.Command{
 			dst = ""
 		}
 		if err := executor.DecodeFile(args[0], dst); err != nil {
-			fmt.Printf("Error decoding %s : %v", args[0], err)
+			fmt.Println(err.Error())
 			os.Exit(2)
+		}
+		if !executor.Quiet {
+			fmt.Println("File " + args[0] + hftx.Green("decoded successfully"))
 		}
 	},
 }

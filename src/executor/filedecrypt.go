@@ -13,7 +13,7 @@ import (
 	"os"
 
 	ce "github.com/jeanfrancoisgratton/customError/v3"
-	hftx "github.com/jeanfrancoisgratton/helperFunctions/v4/terminalfx"
+	hftx "github.com/jeanfrancoisgratton/helperFunctions/v5/terminalfx"
 )
 
 func DecodeFile(sourcefile, destfile string) *ce.CustomError {
