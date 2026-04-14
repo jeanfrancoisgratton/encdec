@@ -1,6 +1,6 @@
 // encdec
 // Written by J.F. Gratton <jean-francois@famillegratton.net>
-// src/executor/structs.go :
+// src/executor/types.go :
 // Original file timestamp: 2024.08.11 07:42:43
 
 package executor

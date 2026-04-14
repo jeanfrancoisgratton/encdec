@@ -6,17 +6,19 @@ package cmd
 import (
 	"encdec/executor"
 	"fmt"
-	hf "github.com/jeanfrancoisgratton/helperFunctions"
-	"github.com/spf13/cobra"
 	"os"
 	"runtime"
+	"strings"
+
+	hftx "github.com/jeanfrancoisgratton/helperFunctions/v5/terminalfx"
+	"github.com/spf13/cobra"
 )
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:     "encdec",
 	Short:   "Encode and decode a string or file to-from AES-256",
-	Version: hf.White(fmt.Sprintf("1.21.03-0-%s (2024.12.19)", runtime.GOARCH)),
+	Version: hftx.White(fmt.Sprintf("1.30.00 (2026.04.13), Go version : " + strings.TrimPrefix(runtime.Version(), "go"))),
 }
 
 var clCmd = &cobra.Command{
