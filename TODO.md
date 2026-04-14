@@ -1,1 +1,1 @@
-Move all functions to helperFunctions package
+[x] Move all functions to helperFunctions package

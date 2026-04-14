@@ -1,6 +1,6 @@
 // encdec
 // Écrit par J.F. Gratton <jean-francois@famillegratton.net>
-// Orininal name: src/helpers/crypto.go
+// Orininal name: src/helpers/helpers.go
 // Original time: 2023/07/06 15:27
 
 package executor

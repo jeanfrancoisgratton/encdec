@@ -12,8 +12,8 @@
 %define _build_id_links none
 %define _name   encdec
 %define _prefix /opt
-%define _version 1.21.03
-%define _rel 0
+%define _version 1.30.00
+%define _rel 1
 #%define _arch aarch64
 %define _binaryname encdec
 
@@ -44,12 +44,13 @@ PATH=$PATH:/opt/go/bin CGO_ENABLED=0 go build -trimpath -ldflags="-s -w -buildid
 rm -rf $RPM_BUILD_ROOT
 
 %pre
-exit 0
+
 
 %install
 install -Dpm 0755 %{_sourcedir}/%{_binaryname} %{buildroot}%{_bindir}/%{_binaryname}
 
 %post
+BIN="%{_prefix}/bin/%{_binaryname}"
 
 %preun
 
@@ -57,10 +58,24 @@ install -Dpm 0755 %{_sourcedir}/%{_binaryname} %{buildroot}%{_bindir}/%{_binaryn
 
 %files
 %defattr(-,root,root,-)
-%{_bindir}/%{_binaryname}
+%attr(2755,root,root) %{_prefix}/bin/%{_binaryname}
+
 
 
 %changelog
+* Mon Nov 17 2025 Binary package builder <builder@famillegratton.net> 1.30.00-1
+- update rev num as the builddeps got updated (jean-
+  francois@famillegratton.net)
+- updated builddeps (jean-francois@famillegratton.net)
+
+* Mon Nov 17 2025 Binary package builder <builder@famillegratton.net> 1.30.00-0
+- Completed proper error handling (jean-francois@famillegratton.net)
+- Fixed package name in abuild script (builder@famillegratton.net)
+- apk fix (jean-francois@famillegratton.net)
+- interim commit (jean-francois@famillegratton.net)
+- Version bump (jean-francois@famillegratton.net)
+- removed github actions file, un-needed (jean-francois@famillegratton.net)
+
 * Tue Sep 09 2025 Binary package builder <builder@famillegratton.net> 1.21.03-0
 - new package built with tito
 

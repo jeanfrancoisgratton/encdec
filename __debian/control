@@ -5,4 +5,4 @@ Maintainer: J.F.Gratton <nexus@famillegratton.net>
 Description: Encrypt - decrypt strings
  AES-256 encode and decode strings
 Section: Administration Utilities
-Depends: gcc
+Build-Depends: golang-any

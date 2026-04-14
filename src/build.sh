@@ -1,9 +1,36 @@
 #!/usr/bin/env sh
 
-OUTPUT=/opt/bin
+set -e
 
-if [ "$#" -gt 0 ]; then
-    OUTPUT=$1
+BRANCH=`git rev-parse --abbrev-ref HEAD`
+BRANCH=$(echo "$BRANCH" | tr '/' '_')
+BINARY=encdec
+OUTPUT=/opt/bin
+COMPLETION=false
+
+# Parse arguments
+while [ "$#" -gt 0 ]; do
+    case "$1" in
+        -b|--binary)
+            shift
+            BINARY="$1"
+            ;;
+        *)
+            OUTPUT="$1"
+            ;;
+    esac
+    shift
+done
+
+if [ "$BRANCH" = "master" ] || [ "$BRANCH" = "main" ] || [ "$BRANCH" = "develop" ]; then
+    FULLNAME="$BINARY"
+else
+    FULLNAME="$BINARY-$BRANCH"
 fi
-go build -o ${OUTPUT}/encdec .
+
+echo "Building ${OUTPUT}/${FULLNAME}"
+CGO_ENABLED=0 go build -trimpath -ldflags="-s -w -buildid=" -o ${OUTPUT}/${FULLNAME} .
+
+
+# Enable tab completion
 
