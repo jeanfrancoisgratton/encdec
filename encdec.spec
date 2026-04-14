@@ -63,6 +63,9 @@ BIN="%{_prefix}/bin/%{_binaryname}"
 
 
 %changelog
+* Tue Apr 14 2026 Binary package builder <builder@famillegratton.net> 1.30.00-0
+- new package built with tito
+
 * Mon Nov 17 2025 Binary package builder <builder@famillegratton.net> 1.30.00-1
 - update rev num as the builddeps got updated (jean-
   francois@famillegratton.net)
