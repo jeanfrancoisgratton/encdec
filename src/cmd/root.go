@@ -145,6 +145,8 @@ func changelog() {
 	fmt.Print(`
 VERSION		DATE			COMMENT
 -------		----			-------
+1.31.00		2026.04.14		GO version bump (1.26.2), fixed inconsistent error handling; decoding a string actually returned a re-encoded one
+1.30.00		2025.11.17		GO version bump (1.25.4), major package and builddeps update. Added a forgotten error path
 1.21.03		2024.12.19		GO version bump (1.23.4)
 1.21.02		2024.08.13		Variables reshuffling
 1.21.01		2024.08.12		Inverted quiet-verbose switch
