@@ -19,7 +19,7 @@ import (
 var rootCmd = &cobra.Command{
 	Use:     "encdec",
 	Short:   "Encode and decode a string or file to-from AES-256",
-	Version: hftx.White(fmt.Sprintf("1.30.00 (2026.04.13), Go version : " + strings.TrimPrefix(runtime.Version(), "go"))),
+	Version: hftx.White("1.30.00 (2026.04.13), Go version : " + strings.TrimPrefix(runtime.Version(), "go")),
 }
 
 var clCmd = &cobra.Command{
@@ -51,7 +51,7 @@ var encodeCmd = &cobra.Command{
 			if executor.Quiet {
 				fmt.Println(s)
 			} else {
-				fmt.Println("Encoded string is: %s", hftx.Green(s))
+				fmt.Println("Encoded string is: " + hftx.Green(s))
 			}
 			os.Exit(0)
 		}
@@ -92,7 +92,7 @@ var decodeCmd = &cobra.Command{
 			if executor.Quiet {
 				fmt.Println(s)
 			} else {
-				fmt.Println("Decoded string is: %s", hftx.Green(s))
+				fmt.Println("Decoded string is: " + hftx.Green(s))
 			}
 			os.Exit(0)
 		}
