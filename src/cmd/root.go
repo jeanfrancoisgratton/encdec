@@ -9,6 +9,7 @@ import (
 	"os"
 	"runtime"
 	"strings"
+	"time"
 
 	ce "github.com/jeanfrancoisgratton/customError/v3"
 	hftx "github.com/jeanfrancoisgratton/helperFunctions/v5/terminalfx"
@@ -17,9 +18,10 @@ import (
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:     "encdec",
-	Short:   "Encode and decode a string or file to-from AES-256",
-	Version: hftx.White("1.30.00 (2026.04.13), Go version : " + strings.TrimPrefix(runtime.Version(), "go")),
+	Use:   "encdec",
+	Short: "Encode and decode a string or file to-from AES-256",
+	//Version: hftx.White("1.30.00 (2026.04.13), Go version : " + strings.TrimPrefix(runtime.Version(), "go")),
+	Version: "1.30.00 (" + time.Now().Format("2006.01.02") + "), Go version :" + strings.TrimPrefix(runtime.Version(), "go"),
 }
 
 var clCmd = &cobra.Command{
