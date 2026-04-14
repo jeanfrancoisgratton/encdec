@@ -21,7 +21,7 @@ var rootCmd = &cobra.Command{
 	Use:   "encdec",
 	Short: "Encode and decode a string or file to-from AES-256",
 	//Version: hftx.White("1.30.00 (2026.04.13), Go version : " + strings.TrimPrefix(runtime.Version(), "go")),
-	Version: "1.30.00-git1a49f15 (" + time.Now().Format("2006.01.02") + "), Go version : " + strings.TrimPrefix(runtime.Version(), "go"),
+	Version: "1.31.00 (" + time.Now().Format("2006.01.02") + "), Go version : " + strings.TrimPrefix(runtime.Version(), "go"),
 }
 
 var clCmd = &cobra.Command{
@@ -86,7 +86,7 @@ var decodeCmd = &cobra.Command{
 
 		if !executor.FileOps {
 			// decode a string
-			s, e = executor.Encode(args[0])
+			s, e = executor.Decode(args[0])
 			if e != nil {
 				fmt.Println(e.Error())
 				os.Exit(1)
@@ -129,7 +129,7 @@ func init() {
 	rootCmd.AddCommand(encodeCmd)
 	rootCmd.AddCommand(decodeCmd)
 
-	rootCmd.PersistentFlags().BoolVarP(&executor.Quiet, "quiet", "q", true, "Only show the encrypted/decrypted string")
+	rootCmd.PersistentFlags().BoolVarP(&executor.Quiet, "quiet", "q", false, "Only show the encrypted/decrypted string")
 	rootCmd.PersistentFlags().BoolVarP(&executor.PromptForKeys, "prompt", "p", false, "Should we prompt for a secret key")
 	rootCmd.PersistentFlags().BoolVarP(&executor.DEBUG, "debug", "", false, "Debug mode: show extra output")
 	decodeCmd.PersistentFlags().BoolVarP(&executor.FileOps, "file", "f", false, "Are we dealing with a file or not")
