@@ -63,6 +63,13 @@ BIN="%{_prefix}/bin/%{_binaryname}"
 
 
 %changelog
+* Tue Apr 14 2026 Binary package builder <builder@famillegratton.net> 1.31.00-0
+- EncodeString was actually re-encoding the string instead of decoding it
+  (jean-francois@famillegratton.net)
+- final version output fix (jean-francois@famillegratton.net)
+- fixed version output with git commit hash (jean-francois@famillegratton.net)
+- fixed version output (jean-francois@famillegratton.net)
+
 * Tue Apr 14 2026 Binary package builder <builder@famillegratton.net> 1.30.00-0
 - new package built with tito
 
