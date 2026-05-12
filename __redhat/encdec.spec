@@ -54,6 +54,10 @@ BIN="%{_prefix}/bin/%{_binaryname}"
 
 
 %changelog
+* Tue May 12 2026 Binary package builder <builder@famillegratton.net> 1.32.00-0
+- Overhauled binary packaging structure, go version bump -> 1.26.3
+- updated changelog
+
 * Tue Apr 14 2026 Binary package builder <builder@famillegratton.net> 1.31.00-0
 - EncodeString was actually re-encoding the string instead of decoding it
   (jean-francois@famillegratton.net)
