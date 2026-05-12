@@ -1,20 +1,10 @@
-%ifarch aarch64
-%global _arch aarch64
-%global BuildArchitectures aarch64
-%endif
-
-%ifarch x86_64
-%global _arch x86_64
-%global BuildArchitectures x86_64
-%endif
-
 %define debug_package   %{nil}
 %define _build_id_links none
 %define _name   encdec
 %define _prefix /opt
-%define _version 1.31.00
+%define _version 1.32.00
 %define _rel 0
-#%define _arch aarch64
+%define _arch x86_64
 %define _binaryname encdec
 
 Name:       encdec
@@ -27,7 +17,7 @@ License:    GPL2.0
 URL:        https://github.com/jeanfrancoisgratton/encdec
 
 Source0:    %{name}-%{_version}.tar.gz
-#BuildArchitectures: aarch64
+#BuildArchitectures: x86_64
 BuildRequires: gcc
 
 %description
@@ -37,8 +27,8 @@ Encode and decode AES-256 strings and files
 %autosetup
 
 %build
-cd %{_sourcedir}/%{_name}-%{_version}/src
-PATH=$PATH:/opt/go/bin CGO_ENABLED=0 go build -trimpath -ldflags="-s -w -buildid=" -o %{_sourcedir}/%{_binaryname} .
+cd src
+CGO_ENABLED=0 /opt/go/bin/go build -trimpath -ldflags="-s -w -buildid=" -o %{_builddir}/%{name}-%{version}/%{_binaryname} .
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -47,7 +37,8 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %install
-install -Dpm 0755 %{_sourcedir}/%{_binaryname} %{buildroot}%{_bindir}/%{_binaryname}
+rm -rf %{buildroot}
+install -Dpm 0755 %{_builddir}/%{name}-%{version}/%{_binaryname} %{buildroot}%{_bindir}/%{_binaryname}
 
 %post
 BIN="%{_prefix}/bin/%{_binaryname}"

@@ -4,12 +4,12 @@
 package cmd
 
 import (
-	"encdec/executor"
 	"fmt"
 	"os"
 	"runtime"
 	"strings"
-	"time"
+
+	"encdec/executor"
 
 	ce "github.com/jeanfrancoisgratton/customError/v3"
 	hftx "github.com/jeanfrancoisgratton/helperFunctions/v5/terminalfx"
@@ -19,9 +19,9 @@ import (
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "encdec",
-	Short: "Encode and decode a string or file to-from AES-256",
+	Short: "Encode and decode a string or file to-from BASE64",
 	//Version: hftx.White("1.30.00 (2026.04.13), Go version : " + strings.TrimPrefix(runtime.Version(), "go")),
-	Version: "1.31.00 (" + time.Now().Format("2006.01.02") + "), Go version : " + strings.TrimPrefix(runtime.Version(), "go"),
+	Version: "1.32.00 (2026.04.14), Go version : " + strings.TrimPrefix(runtime.Version(), "go"),
 }
 
 var clCmd = &cobra.Command{
@@ -145,6 +145,7 @@ func changelog() {
 	fmt.Print(`
 VERSION		DATE			COMMENT
 -------		----			-------
+1.32.00		2026.05.11		Go version bump (1.26.3), binary packaging overhaul for RHEL and ArchLinux
 1.31.00		2026.04.14		GO version bump (1.26.2), fixed inconsistent error handling; decoding a string actually returned a re-encoded one
 1.30.00		2025.11.17		GO version bump (1.25.4), major package and builddeps update. Added a forgotten error path
 1.21.03		2024.12.19		GO version bump (1.23.4)
