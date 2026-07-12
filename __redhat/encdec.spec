@@ -54,6 +54,13 @@ BIN="%{_prefix}/bin/%{_binaryname}"
 
 
 %changelog
+* Sun Jul 12 2026 Binary package builder <builder@famillegratton.net> 1.4.0-0
+- SemVer alignment, rpmbuild enhancements, gover update
+- removed tito, leftover from previous build system
+- updated CL
+- Overhauled binary packaging structure, go version bump -> 1.26.3
+- updated changelog
+
 * Tue May 12 2026 Binary package builder <builder@famillegratton.net> 1.32.00-0
 - Overhauled binary packaging structure, go version bump -> 1.26.3
 - updated changelog
