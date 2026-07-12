@@ -18,10 +18,9 @@ import (
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "encdec",
-	Short: "Encode and decode a string or file to-from BASE64",
-	//Version: hftx.White("1.30.00 (2026.04.13), Go version : " + strings.TrimPrefix(runtime.Version(), "go")),
-	Version: "1.32.00 (2026.04.14), Go version : " + strings.TrimPrefix(runtime.Version(), "go"),
+	Use:     "encdec",
+	Short:   "Encode and decode a string or file to-from BASE64",
+	Version: "1.4.0 (2026.07.12), Go version : " + strings.TrimPrefix(runtime.Version(), "go"),
 }
 
 var clCmd = &cobra.Command{
@@ -145,6 +144,7 @@ func changelog() {
 	fmt.Print(`
 VERSION		DATE			COMMENT
 -------		----			-------
+1.4.0		2026.07.12		Go version bump (1.26.5), version number now fully aligned with SemVer
 1.32.00		2026.05.11		Go version bump (1.26.3), binary packaging overhaul for RHEL and ArchLinux
 1.31.00		2026.04.14		GO version bump (1.26.2), fixed inconsistent error handling; decoding a string actually returned a re-encoded one
 1.30.00		2025.11.17		GO version bump (1.25.4), major package and builddeps update. Added a forgotten error path
