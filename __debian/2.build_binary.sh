@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-PKGDIR=encdec-1.4.0-0_amd64
+PKGDIR=encdec-1.4.1-0_amd64
 
 mkdir -p ${PKGDIR}/opt/bin ${PKGDIR}/DEBIAN
 mv control ${PKGDIR}/DEBIAN/

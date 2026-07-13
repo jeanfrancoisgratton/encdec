@@ -24,7 +24,6 @@ func EncodeFile(sourcefile, destfile string) *ce.CustomError {
 		destfile = sourcefile + ".enc"
 	}
 
-
 	if cerr = encode(sourcefile, destfile); cerr != nil {
 		return cerr
 	}
@@ -41,9 +40,6 @@ func EncodeFile(sourcefile, destfile string) *ce.CustomError {
 }
 
 func encode(source, dest string) *ce.CustomError {
-	if PromptForKeys {
-		SecretKey = getSecretKey("Please enter a 32 bytes (characters) key: ")
-	}
 	if len(SecretKey) != 32 {
 		fmt.Printf("Current key is only %v bytes long. It needs to be of exactly 32 bytes. Aborting.\n", len(SecretKey))
 		os.Exit(1)

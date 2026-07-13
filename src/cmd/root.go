@@ -20,7 +20,7 @@ import (
 var rootCmd = &cobra.Command{
 	Use:     "encdec",
 	Short:   "Encode and decode a string or file to-from BASE64",
-	Version: "1.4.0 (2026.07.12), Go version : " + strings.TrimPrefix(runtime.Version(), "go"),
+	Version: "1.4.1 (2026.07.13), Go version : " + strings.TrimPrefix(runtime.Version(), "go"),
 }
 
 var clCmd = &cobra.Command{
@@ -68,7 +68,7 @@ var encodeCmd = &cobra.Command{
 			os.Exit(2)
 		}
 		if !executor.Quiet {
-			fmt.Println("File " + args[0] + hftx.Green("encoded successfully"))
+			fmt.Println("File " + args[0] + hftx.Green(" encoded successfully"))
 		}
 	},
 }
@@ -111,7 +111,7 @@ var decodeCmd = &cobra.Command{
 			os.Exit(2)
 		}
 		if !executor.Quiet {
-			fmt.Println("File " + args[0] + hftx.Green("decoded successfully"))
+			fmt.Println("File " + args[0] + hftx.Green(" decoded successfully"))
 		}
 	},
 }
@@ -128,8 +128,8 @@ func init() {
 	rootCmd.AddCommand(encodeCmd)
 	rootCmd.AddCommand(decodeCmd)
 
+	rootCmd.PersistentFlags().StringVarP(&executor.SecretKey, "secret", "s", "secret key 2 encrypt and decrypt", "The key to encrypt the data --MUST BE 32bytes long")
 	rootCmd.PersistentFlags().BoolVarP(&executor.Quiet, "quiet", "q", false, "Only show the encrypted/decrypted string")
-	rootCmd.PersistentFlags().BoolVarP(&executor.PromptForKeys, "prompt", "p", false, "Should we prompt for a secret key")
 	rootCmd.PersistentFlags().BoolVarP(&executor.DEBUG, "debug", "", false, "Debug mode: show extra output")
 	decodeCmd.PersistentFlags().BoolVarP(&executor.FileOps, "file", "f", false, "Are we dealing with a file or not")
 	encodeCmd.PersistentFlags().BoolVarP(&executor.FileOps, "file", "f", false, "Are we dealing with a file or not")
@@ -144,6 +144,7 @@ func changelog() {
 	fmt.Print(`
 VERSION		DATE			COMMENT
 -------		----			-------
+1.4.1		2026.07.13		Removed interactive flag -p in favor of -s; added test files
 1.4.0		2026.07.12		Go version bump (1.26.5), version number now fully aligned with SemVer
 1.32.00		2026.05.11		Go version bump (1.26.3), binary packaging overhaul for RHEL and ArchLinux
 1.31.00		2026.04.14		GO version bump (1.26.2), fixed inconsistent error handling; decoding a string actually returned a re-encoded one

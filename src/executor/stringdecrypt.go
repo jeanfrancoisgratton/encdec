@@ -11,9 +11,6 @@ import (
 
 // ref: https://www.golinuxcloud.com/golang-encrypt-decrypt/#Encryption
 func Decode(cryptedString string) (string, *ce.CustomError) {
-	if PromptForKeys {
-		SecretKey = getSecretKey("Please enter a 32 bytes (characters) key: ")
-	}
 	if len(SecretKey) != 32 {
 		return "", &ce.CustomError{Title: "Unable to decode", Message: fmt.Sprintf("Current key is only %v bytes long. It needs to be of exactly 32 bytes.",
 			len(SecretKey))}

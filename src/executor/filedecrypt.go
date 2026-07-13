@@ -17,18 +17,12 @@ import (
 )
 
 func DecodeFile(sourcefile, destfile string) *ce.CustomError {
-	//var err error = nil
 	var cerr *ce.CustomError = nil
 
 	if destfile == "" {
 		destfile = sourcefile + ".dec"
 	}
-	//if DEBUG {
-	//	fmt.Printf("[DecodeFile] source file %s\n", sourcefile)
-	//	fmt.Printf("[DecodeFile] output file %s\n", destfile)
-	//	fmt.Printf("[DecodeFile] keep file ? %\n", Keep)
-	//	fmt.Printf("[DecodeFile] keep file ? % %\n", Quiet)
-	//}
+
 	cerr = decode(sourcefile, destfile)
 
 	if !Keep && cerr == nil {
@@ -43,9 +37,6 @@ func DecodeFile(sourcefile, destfile string) *ce.CustomError {
 }
 
 func decode(source, dest string) *ce.CustomError {
-	if PromptForKeys {
-		SecretKey = getSecretKey("Please enter a 32 bytes (characters) key: ")
-	}
 	if len(SecretKey) != 32 {
 		fmt.Printf("Current key is only %v bytes long. It needs to be of exactly 32 bytes. Aborting.\n", len(SecretKey))
 		fmt.Println(hftx.InfoSign(fmt.Sprintf("%s %s", hftx.Red("ATTEMPTING TO"),

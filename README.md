@@ -1,35 +1,135 @@
-<H1>encdec</H1>
-Encrypt and Decrypt strings<br><br>
+<img src="./images/encdec_banner.png" alt="encdec logo" height="768" width="1024" />
+
+# encdec
 ___
-(while technically different, I have a loose use of terms like encrypt-encode; I'm not pedantic, and aware that they are different; bear with me, please :-) )
-<H2>Overview</H2>
-<H3>How does it work</H3>
-In its default mode, this tool will encrypt and decrypt any string you will pass as an argument.<br>
-With the `-f` parameter, you pass a source and destination filename, and it will AES-256 encode/decode the file.
-<H3>String mode</H3>
-Simple: `encdec {encode|decode} $STRING`<br>
-Where $STRING is the string to encode or decode. Note that the decoded string will be output to stdout.
+A small command-line tool to **encrypt/decrypt strings and files** using AES-256 (CFB mode).
 
-<H3>File mode (requires the -f flag)</H3>
-Also simple: `encdec {encode|decode} $FILENAME`
-You need to provide the full source pathname.
+> A note on terminology: throughout this project the words *encode/encrypt* and *decode/decrypt*
+> are used loosely and interchangeably. They are technically different things — this is a
+> deliberate, non-pedantic shortcut, not a mistake.
 
-<H3>Private key</H3>
-AES-256 needs a private key to encrypt and decrypt a file or string. There is a built-in key in the software that you can easily find browsing the source code.<br>I left it there for testing purposes, but for obvious security reasons, you should avoid using it.<br><br>
-If you want to use your own, the `-p` flag will prompt you eventually to provide your own key. You will need to safe-keep it somewhere, as there are no mechanisms to retreive it if lost. Also, note that the key _needs to be exactly 32bytes long_.
+---
 
-<H2>Build, Install</H2>
-You can either build from source, or use the provided binary packages (Alpine, RedHat, Debian)
+## Overview
 
-<H3>Source install</H3>
-Once you've cloned the repo, go into the `src/` directory, and run `./upgrade_pkgs.sh` (about this, please note that package upgrades have not been tested beyond current versions, for obvious reasons).
+`encdec` operates in two modes:
 
-After this step, you can run `./build.sh` (providing an optional `-o` param with a target dir is available). This will build and copy the binary into `/opt/bin`
+- **String mode** (default): encrypts/decrypts a string passed as an argument, printing the
+  result to stdout. Ciphertext is emitted as URL-safe Base64.
+- **File mode** (`-f`): encrypts/decrypts a file on disk. Files are streamed in 64&nbsp;KB chunks,
+  so arbitrarily large files can be processed without loading them into memory.
 
-You might wish to `strip` the produced binary, as it still contains debugging code.
+Both modes use AES-256 in CFB mode with a randomly generated IV that is stored alongside the
+ciphertext (prepended to the file, or embedded in the Base64 output for strings).
 
-<H3>Binary packages</H3>
-For now, I provide all the necessary scripts and files to build the RPM, DEB and APK packages, but all of these depend on my own build containers, which, for now, I do not provide. Maybe some other time, but not now as they depend way too heavily on my home architecture.
+## Usage
 
-So, as an alternative, you can find the binary packages at
-https://github.com/jeanfrancoisgratton/encdec/releases
+```
+encdec {encode|decode} [flags] <string | file> [destfile]
+```
+
+Subcommands (with aliases):
+
+| Command             | Alias | Description                          |
+|---------------------|-------|--------------------------------------|
+| `encode`            | `enc` | Encrypt a string or file             |
+| `decode`            | `dec` | Decrypt a string or file             |
+| `changelog`         | `cl`  | Show the version changelog           |
+
+Flags:
+
+| Flag              | Scope           | Description                                                        |
+|-------------------|-----------------|-------------------------------------------------------------------|
+| `-s, --secret`    | global          | 32-byte encryption/decryption key (**must be exactly 32 bytes**)  |
+| `-q, --quiet`     | global          | Print only the resulting string, no decoration                    |
+| `--debug`         | global          | Show extra debug output                                           |
+| `-f, --file`      | encode/decode   | Operate on a file instead of a string                             |
+| `-k, --keep`      | encode/decode   | Keep the original file instead of replacing it in place           |
+
+### String mode
+
+```sh
+encdec encode "some secret text"
+encdec decode AAECAwQF...     # the Base64 blob produced above
+```
+
+The decoded/encoded string is written to stdout. Use `-q` to print just the raw value (handy
+for piping into other commands).
+
+### File mode (requires `-f`)
+
+```sh
+encdec encode -f secrets.txt              # encrypts secrets.txt in place
+encdec encode -f secrets.txt out.enc      # writes ciphertext to out.enc
+encdec decode -f secrets.txt              # decrypts secrets.txt in place
+```
+
+Behaviour with respect to the destination file:
+
+- If **no destination** is given, encdec writes to a temporary file (`<source>.enc` /
+  `<source>.dec`) and, unless `-k` is passed, removes the original and renames the result back
+  to the original name — i.e. the file is transformed **in place**.
+- If a **destination** is given, the result is written there.
+- Passing `-k, --keep` preserves the original source file.
+
+### The secret key
+
+AES-256 requires a 32-byte key. `encdec` ships with a **hard-coded default key** that is trivially
+visible in the source — it exists purely for testing and demos. **Do not rely on it for anything
+sensitive.**
+
+To use your own key, pass it with `-s`:
+
+```sh
+encdec encode -s "0123456789abcdef0123456789abcdef" "top secret"
+```
+
+The key **must be exactly 32 bytes long**, otherwise the operation aborts. There is no key-recovery
+mechanism: if you lose the key you used to encrypt something, the data is unrecoverable, so store
+it safely.
+
+## Build & Install
+
+You can build from source or grab a pre-built package.
+
+### From source
+
+Requirements: a Go toolchain (see `src/go.mod` for the version) and Git.
+
+```sh
+git clone https://github.com/jeanfrancoisgratton/encdec.git
+cd encdec/src
+
+./updateBuildDeps.sh   # optional: refresh module dependencies
+./build.sh             # builds and installs the binary
+```
+
+By default `build.sh` compiles a stripped, trimmed static binary
+(`CGO_ENABLED=0`, `-ldflags="-s -w"`) into `/opt/bin`. You can override the destination:
+
+```sh
+./build.sh /usr/local/bin      # install elsewhere
+./build.sh -b mytool /opt/bin  # override the binary name
+```
+
+### Binary packages
+
+Packaging scripts and specs are provided for several distributions:
+
+- **Alpine** — `__alpine/` (APKBUILD)
+- **Arch Linux** — `__archlinux/` (PKGBUILD)
+- **Debian** — `__debian/`
+- **RedHat / RPM** — `__redhat/`
+
+These build recipes depend on the author's own build containers and are not guaranteed to work
+out of the box elsewhere. As an easier alternative, pre-built packages are published at:
+
+<https://github.com/jeanfrancoisgratton/encdec/releases>
+
+## License
+
+Released under the **GNU General Public License v3** — see [docs/LICENSE](docs/LICENSE).
+
+## Author
+
+Jean-François Gratton — <jean-francois@famillegratton.net>
