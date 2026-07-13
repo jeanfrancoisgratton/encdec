@@ -54,6 +54,9 @@ BIN="%{_prefix}/bin/%{_binaryname}"
 
 
 %changelog
+* Mon Jul 13 2026 Binary package builder <builder@famillegratton.net> 1.4.1-0
+- Added test files, updated doc, moved secret key management from -p to -s
+
 * Sun Jul 12 2026 Binary package builder <builder@famillegratton.net> 1.4.0-0
 - SemVer alignment, rpmbuild enhancements, gover update
 - removed tito, leftover from previous build system
