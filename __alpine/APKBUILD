@@ -2,7 +2,7 @@
 # PACKAGER: APK Builder <builder@famillegratton.net>
 pkgname=encdec
 pkgver=1.4.1
-pkgrel=0
+pkgrel=2
 pkgdir=/data/packages
 builddir="$startdir/src/BUILD"
 pkgdesc="Small tool to encode/decode strings"
