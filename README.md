@@ -37,7 +37,6 @@ Subcommands (with aliases):
 |---------------------|-------|--------------------------------------|
 | `encode`            | `enc` | Encrypt a string or file             |
 | `decode`            | `dec` | Decrypt a string or file             |
-| `changelog`         | `cl`  | Show the version changelog           |
 
 Flags:
 
