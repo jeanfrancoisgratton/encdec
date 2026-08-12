@@ -1,4 +1,4 @@
-SPEC      := nxtools.spec
+SPEC      := encdec.spec
 NAME      := $(shell rpmspec -q --qf '%{name}\n'    $(SPEC) | head -1)
 VERSION   := $(shell rpmspec -q --qf '%{version}\n' $(SPEC) | head -1)
 RELEASE   := $(shell rpmspec -q --qf '%{release}\n' $(SPEC) | head -1)
