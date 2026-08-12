@@ -20,16 +20,7 @@ import (
 var rootCmd = &cobra.Command{
 	Use:     "encdec",
 	Short:   "Encode and decode a string or file to-from BASE64",
-	Version: "1.4.1 (2026.07.13), Go version : " + strings.TrimPrefix(runtime.Version(), "go"),
-}
-
-var clCmd = &cobra.Command{
-	Use:     "changelog",
-	Aliases: []string{"cl"},
-	Short:   "Shows changelog",
-	Run: func(cmd *cobra.Command, args []string) {
-		changelog()
-	},
+	Version: "1.5.0 (2026.08.12), Go version : " + strings.TrimPrefix(runtime.Version(), "go"),
 }
 
 var encodeCmd = &cobra.Command{
@@ -124,39 +115,15 @@ func Execute() {
 }
 
 func init() {
-	rootCmd.AddCommand(clCmd)
-	rootCmd.AddCommand(encodeCmd)
-	rootCmd.AddCommand(decodeCmd)
+	rootCmd.AddCommand(encodeCmd, decodeCmd)
 
-	rootCmd.PersistentFlags().StringVarP(&executor.SecretKey, "secret", "s", "secret key 2 encrypt and decrypt", "The key to encrypt the data --MUST BE 32bytes long")
+	rootCmd.PersistentFlags().StringVarP(&executor.Passphrase, "secret", "s", "", "Passphrase to encrypt/decrypt the data; optional, of any length (defaults to the empty passphrase)")
 	rootCmd.PersistentFlags().BoolVarP(&executor.Quiet, "quiet", "q", false, "Only show the encrypted/decrypted string")
 	rootCmd.PersistentFlags().BoolVarP(&executor.DEBUG, "debug", "", false, "Debug mode: show extra output")
 	decodeCmd.PersistentFlags().BoolVarP(&executor.FileOps, "file", "f", false, "Are we dealing with a file or not")
 	encodeCmd.PersistentFlags().BoolVarP(&executor.FileOps, "file", "f", false, "Are we dealing with a file or not")
-	decodeCmd.PersistentFlags().BoolVarP(&executor.Keep, "keep", "k", false, "Should we keep the original file")
-	encodeCmd.PersistentFlags().BoolVarP(&executor.Keep, "keep", "k", false, "Should we keep the original file")
-}
-
-func changelog() {
-	//fmt.Printf("\x1b[2J")
-	fmt.Printf("\x1bc")
-
-	fmt.Print(`
-VERSION		DATE			COMMENT
--------		----			-------
-1.4.1		2026.07.13		Removed interactive flag -p in favor of -s; added test files
-1.4.0		2026.07.12		Go version bump (1.26.5), version number now fully aligned with SemVer
-1.32.00		2026.05.11		Go version bump (1.26.3), binary packaging overhaul for RHEL and ArchLinux
-1.31.00		2026.04.14		GO version bump (1.26.2), fixed inconsistent error handling; decoding a string actually returned a re-encoded one
-1.30.00		2025.11.17		GO version bump (1.25.4), major package and builddeps update. Added a forgotten error path
-1.21.03		2024.12.19		GO version bump (1.23.4)
-1.21.02		2024.08.13		Variables reshuffling
-1.21.01		2024.08.12		Inverted quiet-verbose switch
-1.20.01		2024.08.12		Better file handling for destination file, added github actions, go version bump
-1.10.00		2024.06.25		Added -q switch, moved to github's helperFunctions package
-1.02.00		2023.11.06		Fixed argument count error, version numbering scheme change
-1.000		2023.08.02		Updated changelogs and some forgotten release numbers in packaging scripts
-0.200		2023.07.31		added file encryption/decryption capabilities
-0.100		2023.07.09		stub
-`)
+	decodeCmd.PersistentFlags().BoolVarP(&executor.Keep, "keep", "k", false, "Keep the original file (in-place runs only, ie. when no destfile is given)")
+	encodeCmd.PersistentFlags().BoolVarP(&executor.Keep, "keep", "k", false, "Keep the original file (in-place runs only, ie. when no destfile is given)")
+	decodeCmd.PersistentFlags().BoolVarP(&executor.Force, "force", "F", false, "Overwrite the destination file if it already exists")
+	encodeCmd.PersistentFlags().BoolVarP(&executor.Force, "force", "F", false, "Overwrite the destination file if it already exists")
 }

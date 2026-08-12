@@ -2,7 +2,7 @@
 # Packager: Package builder <builder@famillegratton.net>
 
 pkgname=encdec
-pkgver=1.4.1
+pkgver=1.5.0
 pkgrel=1
 pkgdesc="BASE64 encoding/decoding tool"
 arch=('x86_64')

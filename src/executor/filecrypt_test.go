@@ -23,6 +23,14 @@ func keep(t *testing.T, v bool) {
 	t.Cleanup(func() { Keep = prev })
 }
 
+// force sets the global Force flag for the duration of a test.
+func force(t *testing.T, v bool) {
+	t.Helper()
+	prev := Force
+	Force = v
+	t.Cleanup(func() { Force = prev })
+}
+
 func writeTempFile(t *testing.T, name string, data []byte) string {
 	t.Helper()
 	path := filepath.Join(t.TempDir(), name)
@@ -32,10 +40,10 @@ func writeTempFile(t *testing.T, name string, data []byte) string {
 	return path
 }
 
-// With -k (keep), both source and destination survive and a round-trip
-// reproduces the original bytes.
+// With explicit destinations, both source and destination survive and a
+// round-trip reproduces the original bytes.
 func TestEncodeDecodeFileRoundtrip(t *testing.T) {
-	withKey(t, testKey)
+	withPassphrase(t, testPassphrase)
 	quiet(t)
 	keep(t, true)
 
@@ -73,7 +81,7 @@ func TestEncodeDecodeFileRoundtrip(t *testing.T) {
 // Without -k, the source is replaced in place: after encode+decode the
 // original path holds the original content and no temp files remain.
 func TestEncodeDecodeFileInPlace(t *testing.T) {
-	withKey(t, testKey)
+	withPassphrase(t, testPassphrase)
 	quiet(t)
 	keep(t, false)
 
@@ -103,8 +111,120 @@ func TestEncodeDecodeFileInPlace(t *testing.T) {
 	}
 }
 
+// Naming a destination must never move the result onto the source: the source
+// stays put, untouched, even without -k.
+func TestExplicitDestinationLeavesSourceAlone(t *testing.T) {
+	withPassphrase(t, testPassphrase)
+	quiet(t)
+	keep(t, false)
+
+	plaintext := []byte("the source must survive\n")
+	src := writeTempFile(t, "in.txt", plaintext)
+	dst := filepath.Join(filepath.Dir(src), "out.enc")
+
+	if cerr := EncodeFile(src, dst); cerr != nil {
+		t.Fatalf("EncodeFile returned error: %s", cerr.Error())
+	}
+
+	got, err := os.ReadFile(src)
+	if err != nil {
+		t.Fatalf("source file is gone: %v", err)
+	}
+	if !bytes.Equal(got, plaintext) {
+		t.Errorf("source file was modified: got %q, want %q", got, plaintext)
+	}
+
+	ciphertext, err := os.ReadFile(dst)
+	if err != nil {
+		t.Fatalf("destination file was not written: %v", err)
+	}
+	if bytes.Equal(ciphertext, plaintext) {
+		t.Error("destination holds the plaintext")
+	}
+
+	// And the reverse trip, likewise, must not disturb its own source.
+	back := filepath.Join(filepath.Dir(src), "out.dec")
+	if cerr := DecodeFile(dst, back); cerr != nil {
+		t.Fatalf("DecodeFile returned error: %s", cerr.Error())
+	}
+	if _, err := os.Stat(dst); err != nil {
+		t.Errorf("decode removed its source file: %v", err)
+	}
+	if got, err := os.ReadFile(back); err != nil || !bytes.Equal(got, plaintext) {
+		t.Errorf("round trip through explicit destinations failed: %q (err %v)", got, err)
+	}
+}
+
+// An existing destination is not collateral damage: refuse it without -F.
+func TestRefusesToOverwriteExistingDestination(t *testing.T) {
+	withPassphrase(t, testPassphrase)
+	quiet(t)
+	keep(t, false)
+	force(t, false)
+
+	plaintext := []byte("payload\n")
+	src := writeTempFile(t, "in.txt", plaintext)
+	precious := []byte("DO NOT CLOBBER ME\n")
+	dst := writeTempFile(t, "out.enc", precious)
+
+	if cerr := EncodeFile(src, dst); cerr == nil {
+		t.Fatal("expected EncodeFile to refuse an existing destination, got nil error")
+	}
+
+	if got, _ := os.ReadFile(dst); !bytes.Equal(got, precious) {
+		t.Errorf("destination was clobbered: got %q, want %q", got, precious)
+	}
+	if got, _ := os.ReadFile(src); !bytes.Equal(got, plaintext) {
+		t.Errorf("source was disturbed by a refused run: got %q, want %q", got, plaintext)
+	}
+}
+
+// The scratch file of an in-place run gets the same protection.
+func TestRefusesToOverwriteExistingScratchFile(t *testing.T) {
+	withPassphrase(t, testPassphrase)
+	quiet(t)
+	keep(t, false)
+	force(t, false)
+
+	src := writeTempFile(t, "in.txt", []byte("payload\n"))
+	precious := []byte("leftover from an aborted run\n")
+	if err := os.WriteFile(src+".enc", precious, 0o600); err != nil {
+		t.Fatalf("could not write scratch file: %v", err)
+	}
+
+	if cerr := EncodeFile(src, ""); cerr == nil {
+		t.Fatal("expected EncodeFile to refuse an existing scratch file, got nil error")
+	}
+	if got, _ := os.ReadFile(src + ".enc"); !bytes.Equal(got, precious) {
+		t.Errorf("scratch file was clobbered: got %q, want %q", got, precious)
+	}
+}
+
+func TestForceOverwritesExistingDestination(t *testing.T) {
+	withPassphrase(t, testPassphrase)
+	quiet(t)
+	keep(t, false)
+	force(t, true)
+
+	plaintext := []byte("payload\n")
+	src := writeTempFile(t, "in.txt", plaintext)
+	dst := writeTempFile(t, "out.enc", []byte("stale content\n"))
+
+	if cerr := EncodeFile(src, dst); cerr != nil {
+		t.Fatalf("EncodeFile with -F returned error: %s", cerr.Error())
+	}
+
+	back := filepath.Join(filepath.Dir(src), "out.dec")
+	if cerr := DecodeFile(dst, back); cerr != nil {
+		t.Fatalf("DecodeFile returned error: %s", cerr.Error())
+	}
+	if got, _ := os.ReadFile(back); !bytes.Equal(got, plaintext) {
+		t.Errorf("forced overwrite did not produce valid ciphertext: got %q, want %q", got, plaintext)
+	}
+}
+
 func TestEncodeFileMissingSource(t *testing.T) {
-	withKey(t, testKey)
+	withPassphrase(t, testPassphrase)
 	quiet(t)
 	keep(t, true)
 

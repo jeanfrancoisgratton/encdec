@@ -15,12 +15,15 @@ A small command-line tool to **encrypt/decrypt strings and files** using AES-256
 `encdec` operates in two modes:
 
 - **String mode** (default): encrypts/decrypts a string passed as an argument, printing the
-  result to stdout. Ciphertext is emitted as URL-safe Base64.
-- **File mode** (`-f`): encrypts/decrypts a file on disk. Files are streamed in 64&nbsp;KB chunks,
-  so arbitrarily large files can be processed without loading them into memory.
+  result to stdout.
+- **File mode** (`-f`): encrypts/decrypts a file on disk. The file is read in full, so memory
+  usage is proportional to its size.
 
-Both modes use AES-256 in CFB mode with a randomly generated IV that is stored alongside the
-ciphertext (prepended to the file, or embedded in the Base64 output for strings).
+The cryptography itself is not implemented here: both modes delegate to
+[helperFunctions](https://github.com/jeanfrancoisgratton/helperFunctions) (`v5`), which uses
+AES-256 in CFB mode with a randomly generated IV prepended to the ciphertext, the whole being
+emitted as standard Base64. Encrypted files are therefore Base64 *text*, not raw binary, and are
+written with `0600` permissions.
 
 ## Usage
 
@@ -40,11 +43,12 @@ Flags:
 
 | Flag              | Scope           | Description                                                        |
 |-------------------|-----------------|-------------------------------------------------------------------|
-| `-s, --secret`    | global          | 32-byte encryption/decryption key (**must be exactly 32 bytes**)  |
+| `-s, --secret`    | global          | Encryption/decryption passphrase; optional, of any length          |
 | `-q, --quiet`     | global          | Print only the resulting string, no decoration                    |
 | `--debug`         | global          | Show extra debug output                                           |
 | `-f, --file`      | encode/decode   | Operate on a file instead of a string                             |
-| `-k, --keep`      | encode/decode   | Keep the original file instead of replacing it in place           |
+| `-k, --keep`      | encode/decode   | Keep the original file instead of replacing it in place (in-place runs only) |
+| `-F, --force`     | encode/decode   | Overwrite the destination file if it already exists               |
 
 ### String mode
 
@@ -60,33 +64,44 @@ for piping into other commands).
 
 ```sh
 encdec encode -f secrets.txt              # encrypts secrets.txt in place
-encdec encode -f secrets.txt out.enc      # writes ciphertext to out.enc
+encdec encode -f -k secrets.txt           # keeps secrets.txt, writes secrets.txt.enc
+encdec encode -f secrets.txt out.enc      # writes ciphertext to out.enc, secrets.txt untouched
+encdec encode -f -F secrets.txt out.enc   # ... overwriting out.enc if it already exists
 encdec decode -f secrets.txt              # decrypts secrets.txt in place
 ```
 
 Behaviour with respect to the destination file:
 
-- If **no destination** is given, encdec writes to a temporary file (`<source>.enc` /
-  `<source>.dec`) and, unless `-k` is passed, removes the original and renames the result back
-  to the original name — i.e. the file is transformed **in place**.
-- If a **destination** is given, the result is written there.
-- Passing `-k, --keep` preserves the original source file.
+- If **no destination** is given, encdec works **in place**: it writes to a scratch file
+  (`<source>.enc` / `<source>.dec`) and then, unless `-k` is passed, removes the original and
+  renames the result back to the original name. With `-k`, the original is left alone and the
+  result stays under its `.enc`/`.dec` name.
+- If a **destination** is given, the result is written there and the **source is left
+  untouched**. `-k` has no effect in this mode — there is no in-place replacement to opt out of.
+- An existing destination is **never overwritten** unless `-F, --force` is passed. This covers
+  the scratch file of an in-place run too, so a leftover `foo.enc` from an aborted run will not
+  be silently destroyed.
 
-### The secret key
+### The passphrase
 
-AES-256 requires a 32-byte key. `encdec` ships with a **hard-coded default key** that is trivially
-visible in the source — it exists purely for testing and demos. **Do not rely on it for anything
-sensitive.**
-
-To use your own key, pass it with `-s`:
+`-s` takes a **passphrase**, not a raw key: the 32-byte AES-256 key is derived from the SHA256 sum
+of the passphrase, so any length works.
 
 ```sh
-encdec encode -s "0123456789abcdef0123456789abcdef" "top secret"
+encdec encode -s "correct horse battery staple" "top secret"
 ```
 
-The key **must be exactly 32 bytes long**, otherwise the operation aborts. There is no key-recovery
-mechanism: if you lose the key you used to encrypt something, the data is unrecoverable, so store
-it safely.
+The passphrase is **optional**. Omitting `-s` (or passing `-s ""`) uses the empty passphrase, which
+is a perfectly valid one — the data still gets encrypted, but with a key anyone can reproduce. Use
+it for scrambling, not for secrecy.
+
+There is no recovery mechanism: if you lose the passphrase you used to encrypt something, the data
+is unrecoverable, so store it safely. Note as well that CFB mode is unauthenticated — decrypting
+with the wrong passphrase yields garbage rather than an error.
+
+> **Format change in 1.5.0:** the on-disk/on-wire format changed when encryption moved to
+> `helperFunctions`. Data encrypted by 1.4.1 or earlier **cannot** be decrypted by 1.5.0 and later.
+> Decrypt anything you still care about with the old binary before upgrading.
 
 ## Build & Install
 
