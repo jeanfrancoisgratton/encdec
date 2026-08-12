@@ -54,6 +54,13 @@ BIN="%{_prefix}/bin/%{_binaryname}"
 
 
 %changelog
+* Wed Aug 12 2026 Binary package builder <builder@famillegratton.net> 1.5.0-1
+- wrong specfile name in updateChangelog.sh
+- removed unneeded files from DEBBUILDER, fixed Makefile in RPMBUILDER
+- encode/decode ops handled to the helperFunctions package; fixed major bug where the outfile clobbered the infile
+- updated builddeps
+- Packaging now runs under Makefiles
+
 * Mon Jul 13 2026 Binary package builder <builder@famillegratton.net> 1.4.1-0
 - Added test files, updated doc, moved secret key management from -p to -s
 
