@@ -54,6 +54,10 @@ BIN="%{_prefix}/bin/%{_binaryname}"
 
 
 %changelog
+* Thu Sep 03 2026 Binary package builder <builder@famillegratton.net> 1.6.0-1
+- feat: added a directory encode/decode functionality; go version bump; builddeps update; added windows support
+- doc update
+
 * Wed Aug 12 2026 Binary package builder <builder@famillegratton.net> 1.5.0-1
 - wrong specfile name in updateChangelog.sh
 - removed unneeded files from DEBBUILDER, fixed Makefile in RPMBUILDER
