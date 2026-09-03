@@ -1,4 +1,4 @@
-# nxtools — Arch Linux (pacman) packaging
+# encdec — Arch Linux (pacman) packaging
 #
 # Recipes:
 #   make build     -> makepkg (build the package into PKGDEST)
@@ -38,8 +38,14 @@ PKG       := $(PKGDEST)/$(NAME)-$(VERSION)-$(PKGREL)-$(ARCH).$(PKGEXT)
 .PHONY: build release clean info
 
 build:
+	chmod -R u+w src pkg 2>/dev/null || true
 	rm -rf src pkg
 	PKGDEST=$(PKGDEST) makepkg --force --syncdeps --noconfirm
+
+clean:
+	chmod -R u+w src pkg 2>/dev/null || true
+	rm -rf src pkg
+
 
 release: build
 	# --- refresh the Arch repo database with the freshly built package ---
@@ -59,9 +65,6 @@ release: build
 	done
 	rm -rf $(STAGING)
 	${MAKE} clean
-
-clean:
-	rm -rf src pkg
 
 info:
 	@echo "NAME    = $(NAME)"
