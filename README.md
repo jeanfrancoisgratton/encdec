@@ -12,12 +12,14 @@ A small command-line tool to **encrypt/decrypt strings and files** using AES-256
 
 ## Overview
 
-`encdec` operates in two modes:
+`encdec` operates in three modes:
 
 - **String mode** (default): encrypts/decrypts a string passed as an argument, printing the
   result to stdout.
 - **File mode** (`-f`): encrypts/decrypts a file on disk. The file is read in full, so memory
   usage is proportional to its size.
+- **Directory mode** (`-d`): recursively encrypts/decrypts every regular file below a root
+  directory, using the same in-place semantics as file mode on each one.
 
 The cryptography itself is not implemented here: both modes delegate to
 [helperFunctions](https://github.com/jeanfrancoisgratton/helperFunctions) (`v5`), which uses
@@ -35,8 +37,9 @@ Subcommands (with aliases):
 
 | Command             | Alias | Description                          |
 |---------------------|-------|--------------------------------------|
-| `encode`            | `enc` | Encrypt a string or file             |
-| `decode`            | `dec` | Decrypt a string or file             |
+| `encode`            | `enc` | Encrypt a string, file, or directory |
+| `decode`            | `dec` | Decrypt a string, file, or directory |
+| `version`           |       | Show the software version            |
 
 Flags:
 
@@ -46,6 +49,7 @@ Flags:
 | `-q, --quiet`     | global          | Print only the resulting string, no decoration                    |
 | `--debug`         | global          | Show extra debug output                                           |
 | `-f, --file`      | encode/decode   | Operate on a file instead of a string                             |
+| `-d, --directory` | encode/decode   | Operate on a directory instead of a string (mutually exclusive with `-f`) |
 | `-k, --keep`      | encode/decode   | Keep the original file instead of replacing it in place (in-place runs only) |
 | `-F, --force`     | encode/decode   | Overwrite the destination file if it already exists               |
 
@@ -80,6 +84,19 @@ Behaviour with respect to the destination file:
 - An existing destination is **never overwritten** unless `-F, --force` is passed. This covers
   the scratch file of an in-place run too, so a leftover `foo.enc` from an aborted run will not
   be silently destroyed.
+
+### Directory mode (requires `-d`)
+
+```sh
+encdec encode -d                 # encrypts every regular file under the current directory
+encdec encode -d /path/to/dir    # encrypts every regular file under /path/to/dir
+encdec decode -d -k /path/to/dir # decrypts in place, keeping each source file's .dec copy
+```
+
+`-d` walks the given root directory recursively (the current directory if none is given) and
+applies the same in-place logic as file mode to every regular file it finds; symlinks and other
+special files are left untouched. `-d` and `-f` are mutually exclusive. `-k` and `-F` behave
+exactly as they do in file mode, applied per file.
 
 ### The passphrase
 
@@ -134,6 +151,7 @@ Packaging scripts and specs are provided for several distributions:
 - **Arch Linux** — `__archlinux/` (PKGBUILD)
 - **Debian** — `__debian/`
 - **RedHat / RPM** — `__redhat/`
+- **Windows** — `__windows/` (cross-compiled `.exe` packaged into a `.msi`)
 
 These build recipes depend on the author's own build containers and are not guaranteed to work
 out of the box elsewhere. As an easier alternative, pre-built packages are published at:
