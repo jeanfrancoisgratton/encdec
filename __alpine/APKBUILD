@@ -1,7 +1,7 @@
 # Maintainer: Jean-Francois Gratton <jean-francois@famillegratton.net>
 # PACKAGER: APK Builder <builder@famillegratton.net>
 pkgname=encdec
-pkgver=1.5.0
+pkgver=1.6.0
 pkgrel=1
 pkgdir=/data/packages
 builddir="$startdir/src/BUILD"

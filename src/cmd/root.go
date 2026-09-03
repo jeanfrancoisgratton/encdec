@@ -18,20 +18,52 @@ import (
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:     "encdec",
-	Short:   "Encode and decode a string or file to-from BASE64",
-	Version: "1.5.0 (2026.08.12), Go version : " + strings.TrimPrefix(runtime.Version(), "go"),
+	Use:   "encdec",
+	Short: "Encode and decode a string, file, or directory",
+}
+
+var versionCmd = &cobra.Command{
+	Use:   "version",
+	Short: "Shows the software version",
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println(hftx.White("encdec v1.6.0 (2026.09.03), Go version = v" + strings.TrimPrefix(runtime.Version(), "go")))
+	},
+}
+
+func operationArgs(cmd *cobra.Command, args []string) error {
+	if executor.DirectoryOps {
+		return cobra.MaximumNArgs(1)(cmd, args)
+	}
+	return cobra.MinimumNArgs(1)(cmd, args)
 }
 
 var encodeCmd = &cobra.Command{
 	Use:     "encode",
 	Aliases: []string{"enc"},
-	Example: "encdec enc {[-f sourcefile [destfile]] | sourcestring}",
-	Short:   "Encodes a string or a file",
-	Args:    cobra.MinimumNArgs(1),
+	Example: "encdec enc {[-f sourcefile [destfile]] | [-d [rootdir]] | sourcestring}",
+	Short:   "Encodes a string, file, or directory",
+	Args:    operationArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		var s string
 		var e *ce.CustomError
+
+		if executor.DirectoryOps {
+			rootdir := ""
+			if len(args) > 0 {
+				rootdir = args[0]
+			}
+			if err := executor.EncodeDirectory(rootdir); err != nil {
+				fmt.Println(err.Error())
+				os.Exit(2)
+			}
+			if !executor.Quiet {
+				if rootdir == "" {
+					rootdir = "."
+				}
+				fmt.Println("Directory " + rootdir + hftx.Green(" encoded successfully"))
+			}
+			return
+		}
 
 		if !executor.FileOps {
 			// encode a string
@@ -67,12 +99,30 @@ var encodeCmd = &cobra.Command{
 var decodeCmd = &cobra.Command{
 	Use:     "decode",
 	Aliases: []string{"dec"},
-	Example: "encdec dec {[-f sourcefile [destfile]] | sourcestring}",
-	Short:   "Decodes a string or a file",
-	Args:    cobra.MinimumNArgs(1),
+	Example: "encdec dec {[-f sourcefile [destfile]] | [-d [rootdir]] | sourcestring}",
+	Short:   "Decodes a string, file, or directory",
+	Args:    operationArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		var s string
 		var e *ce.CustomError
+
+		if executor.DirectoryOps {
+			rootdir := ""
+			if len(args) > 0 {
+				rootdir = args[0]
+			}
+			if err := executor.DecodeDirectory(rootdir); err != nil {
+				fmt.Println(err.Error())
+				os.Exit(2)
+			}
+			if !executor.Quiet {
+				if rootdir == "" {
+					rootdir = "."
+				}
+				fmt.Println("Directory " + rootdir + hftx.Green(" decoded successfully"))
+			}
+			return
+		}
 
 		if !executor.FileOps {
 			// decode a string
@@ -115,13 +165,17 @@ func Execute() {
 }
 
 func init() {
-	rootCmd.AddCommand(encodeCmd, decodeCmd)
+	rootCmd.AddCommand(encodeCmd, decodeCmd, versionCmd)
 
 	rootCmd.PersistentFlags().StringVarP(&executor.Passphrase, "secret", "s", "", "Passphrase to encrypt/decrypt the data; optional, of any length (defaults to the empty passphrase)")
 	rootCmd.PersistentFlags().BoolVarP(&executor.Quiet, "quiet", "q", false, "Only show the encrypted/decrypted string")
 	rootCmd.PersistentFlags().BoolVarP(&executor.DEBUG, "debug", "", false, "Debug mode: show extra output")
 	decodeCmd.PersistentFlags().BoolVarP(&executor.FileOps, "file", "f", false, "Are we dealing with a file or not")
 	encodeCmd.PersistentFlags().BoolVarP(&executor.FileOps, "file", "f", false, "Are we dealing with a file or not")
+	decodeCmd.PersistentFlags().BoolVarP(&executor.DirectoryOps, "directory", "d", false, "Recursively decode all regular files below rootdir (defaults to the current directory)")
+	encodeCmd.PersistentFlags().BoolVarP(&executor.DirectoryOps, "directory", "d", false, "Recursively encode all regular files below rootdir (defaults to the current directory)")
+	decodeCmd.MarkFlagsMutuallyExclusive("file", "directory")
+	encodeCmd.MarkFlagsMutuallyExclusive("file", "directory")
 	decodeCmd.PersistentFlags().BoolVarP(&executor.Keep, "keep", "k", false, "Keep the original file (in-place runs only, ie. when no destfile is given)")
 	encodeCmd.PersistentFlags().BoolVarP(&executor.Keep, "keep", "k", false, "Keep the original file (in-place runs only, ie. when no destfile is given)")
 	decodeCmd.PersistentFlags().BoolVarP(&executor.Force, "force", "F", false, "Overwrite the destination file if it already exists")

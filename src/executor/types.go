@@ -24,4 +24,5 @@ var Keep = false
 var Force = false
 
 var FileOps = false
+var DirectoryOps = false
 var DEBUG = false

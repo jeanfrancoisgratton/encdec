@@ -1,8 +1,8 @@
 Package: encdec
-Version: 1.5.0-1
+Version: 1.6.0-1
 Architecture: amd64
 Maintainer: J.F.Gratton <nexus@famillegratton.net>
 Description: Encrypt - decrypt strings
  AES-256 encode and decode strings
-Section: Administration Utilities
+Section: File utilities
 Build-Depends: golang-any
