@@ -10,6 +10,21 @@ Earlier releases used a `major.minor.patch` scheme with zero-padded fields (`1.3
 Entries up to and including 1.21.03 were reconstructed from the RPM `%changelog` in
 `__redhat/encdec.spec`; the current git repository only goes back to 2025-09-09.
 
+## [1.6.0] — 2026-09-03
+
+### Added
+- `-d` / `--directory`, to recursively encode/decode every regular file below a root directory
+  (defaulting to the current directory) using the same in-place semantics and flags as file mode.
+  Mutually exclusive with `-f`/`--file`.
+- `encdec version` subcommand, replacing the built-in `--version` flag.
+- Windows packaging under `__windows/` (cross-compiled `.exe` bundled into a `.msi` with
+  msitools' `wixl`).
+
+### Changed
+- Go version bump to 1.27.1.
+- Build dependencies updated (`customError` to v3.1.0, `helperFunctions` to v5.4.0,
+  `golang.org/x/crypto` to v0.56.0).
+
 ## [1.5.0] — 2026-08-12
 
 ### Changed
