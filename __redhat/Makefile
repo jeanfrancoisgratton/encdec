@@ -6,7 +6,7 @@ SOURCES   := $(HOME)/rpmbuild/SOURCES
 RPMS      := $(HOME)/rpmbuild/RPMS
 DEST      := /data
 REPOROOT  := $(shell git rev-parse --show-toplevel)
-NEXUSREPO := dnfLocal
+NEXUSREPO := redhat
 TAG       := v$(VERSION)
 
 .PHONY: tag release tarball check-tags changelog rpm rpmcl upload commitcl clean

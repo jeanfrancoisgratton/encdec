@@ -10,6 +10,12 @@ Earlier releases used a `major.minor.patch` scheme with zero-padded fields (`1.3
 Entries up to and including 1.21.03 were reconstructed from the RPM `%changelog` in
 `__redhat/encdec.spec`; the current git repository only goes back to 2025-09-09.
 
+## [1.6.1] — 2026-10.13
+### Changed
+- Upgraded to GO v1.27.2
+- Target repository names where updated to reflect the new Nexus repositories in all builder directories
+
+
 ## [1.6.0] — 2026-09-03
 
 ### Added
