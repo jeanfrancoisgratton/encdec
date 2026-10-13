@@ -54,6 +54,15 @@ BIN="%{_prefix}/bin/%{_binaryname}"
 
 
 %changelog
+* Tue Oct 13 2026 Binary package builder <builder@famillegratton.net> 1.6.1-1
+- bug: added missing dep
+- chore (BUILDERS): changed nexus target repository names
+- Merge branch 'develop'
+- chore: dontexec
+- chore: doc update
+- Merge remote-tracking branch 'refs/remotes/origin/main'
+- bug(ARCHLINUX): fixed Makefile to correctly clean builddir up
+
 * Thu Sep 03 2026 Binary package builder <builder@famillegratton.net> 1.6.0-1
 - feat: added a directory encode/decode functionality; go version bump; builddeps update; added windows support
 - doc update
