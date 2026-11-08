@@ -58,6 +58,11 @@ install -Dpm 0755 %{_builddir}/%{name}-%{version}/%{_binaryname} %{buildroot}%{_
 
 
 %changelog
+* Sun Nov 08 2026 Binary package builder <builder@famillegratton.net> 1.7.0-1
+- doc: update
+- feature new -g flag so we can encrypt using the aes-256-gcm scheme now
+- chore: prepping the manifest for the new way of bump versions
+
 * Tue Oct 13 2026 Binary package builder <builder@famillegratton.net> 1.6.1-1
 - bug: added missing dep
 - chore (BUILDERS): changed nexus target repository names
