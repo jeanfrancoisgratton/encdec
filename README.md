@@ -2,7 +2,8 @@
 
 # encdec
 ___
-A small command-line tool to **encrypt/decrypt strings and files** using AES-256 (CFB mode).
+A small command-line tool to **encrypt/decrypt strings and files** using AES-256, in CFB mode by default or in
+authenticated GCM mode with `-g`.
 
 > A note on terminology: throughout this project the words *encode/encrypt* and *decode/decrypt*
 > are used loosely and interchangeably. They are technically different things — this is a
@@ -21,11 +22,18 @@ A small command-line tool to **encrypt/decrypt strings and files** using AES-256
 - **Directory mode** (`-d`): recursively encrypts/decrypts every regular file below a root
   directory, using the same in-place semantics as file mode on each one.
 
-The cryptography itself is not implemented here: both modes delegate to
-[helperFunctions](https://github.com/jeanfrancoisgratton/helperFunctions) (`v5`), which uses
-AES-256 in CFB mode with a randomly generated IV prepended to the ciphertext, the whole being
-emitted as standard Base64. Encrypted files are therefore Base64 *text*, not raw binary, and are
-written with `0600` permissions.
+The cryptography itself is not implemented here: all modes delegate to
+[helperFunctions](https://github.com/jeanfrancoisgratton/helperFunctions) (`v5`), which offers
+two schemes:
+
+- **AES-256-CFB** (default): the key is the SHA256 sum of the passphrase, and a randomly
+  generated IV is prepended to the ciphertext.
+- **AES-256-GCM** (`-g, --gcm`): the key is derived from the passphrase with Argon2id and a
+  random salt; salt and nonce are prepended to the ciphertext, which carries a GCM
+  authentication tag. See [AES-256-GCM mode](#aes-256-gcm-mode-requires--g).
+
+Either way the result is emitted as standard Base64. Encrypted files are therefore Base64
+*text*, not raw binary, and are written with `0600` permissions.
 
 ## Usage
 
@@ -48,6 +56,7 @@ Flags:
 | `-s, --secret`    | global          | Encryption/decryption passphrase; optional, of any length          |
 | `-q, --quiet`     | global          | Print only the resulting string, no decoration                    |
 | `--debug`         | global          | Show extra debug output                                           |
+| `-g, --gcm`       | global          | Use AES-256-GCM instead of the default AES-256-CFB (see below)    |
 | `-f, --file`      | encode/decode   | Operate on a file instead of a string                             |
 | `-d, --directory` | encode/decode   | Operate on a directory instead of a string (mutually exclusive with `-f`) |
 | `-k, --keep`      | encode/decode   | Keep the original file instead of replacing it in place (in-place runs only) |
@@ -98,10 +107,39 @@ applies the same in-place logic as file mode to every regular file it finds; sym
 special files are left untouched. `-d` and `-f` are mutually exclusive. `-k` and `-F` behave
 exactly as they do in file mode, applied per file.
 
+### AES-256-GCM mode (requires `-g`)
+
+```sh
+encdec encode -g -s "my passphrase" "top secret"
+encdec decode -g -s "my passphrase" <Base64 blob>
+encdec encode -g -f secrets.txt
+encdec decode -g -d /path/to/dir
+```
+
+`-g` works with string, file, and directory modes, and all other flags behave the same. It
+gives two things the default CFB mode does not:
+
+- **Authentication**: decrypting with the wrong passphrase, or decrypting data that was
+  tampered with or corrupted, fails with an error instead of returning garbage.
+- **A hardened key derivation**: the key comes from Argon2id, a deliberately slow and
+  memory-hard function, with a fresh random salt on every encryption. Guessing the passphrase
+  by brute force is much costlier than with the plain SHA256 sum CFB mode uses.
+
+Keep in mind:
+
+- **The two formats are not interchangeable.** Data encrypted with `-g` can only be decrypted
+  with `-g`, and data encrypted without it can only be decrypted without it. encdec does not
+  detect which format it is given, so you must remember which one you used.
+- **GCM mode is slower.** Every encryption and every decryption runs Argon2id, which takes
+  64 MiB of memory and a noticeable amount of CPU time (tens of milliseconds on a modern
+  machine). That cost does not matter for a single string or file, but it is paid *once per
+  file* in directory mode, so `-d -g` over a tree with thousands of files takes much longer
+  than `-d` alone.
+
 ### The passphrase
 
-`-s` takes a **passphrase**, not a raw key: the 32-byte AES-256 key is derived from the SHA256 sum
-of the passphrase, so any length works.
+`-s` takes a **passphrase**, not a raw key: the 32-byte AES-256 key is derived from it (SHA256
+sum by default, Argon2id with `-g`), so any length works.
 
 ```sh
 encdec encode -s "correct horse battery staple" "top secret"
@@ -112,8 +150,9 @@ is a perfectly valid one — the data still gets encrypted, but with a key anyon
 it for scrambling, not for secrecy.
 
 There is no recovery mechanism: if you lose the passphrase you used to encrypt something, the data
-is unrecoverable, so store it safely. Note as well that CFB mode is unauthenticated — decrypting
-with the wrong passphrase yields garbage rather than an error.
+is unrecoverable, so store it safely. Note as well that the default CFB mode is unauthenticated —
+decrypting with the wrong passphrase yields garbage rather than an error. Use `-g` if you need
+that to be detected.
 
 > **Format change in 1.5.0:** the on-disk/on-wire format changed when encryption moved to
 > `helperFunctions`. Data encrypted by 1.4.1 or earlier **cannot** be decrypted by 1.5.0 and later.
@@ -135,12 +174,15 @@ cd encdec/src
 ./build.sh             # builds and installs the binary
 ```
 
-By default `build.sh` compiles a stripped, trimmed static binary
-(`CGO_ENABLED=0`, `-ldflags="-s -w"`) into `/opt/bin`. You can override the destination:
+By default `build.sh` runs `go vet` and `go test`, then compiles a stripped, trimmed static binary
+(`CGO_ENABLED=0`, `-ldflags="-s -w"`) into `/opt/bin`, with the version from `encdec.json` and the
+build date injected at link time (`encdec version` shows them; a plain `go build` reports
+`dev (unknown)`). You can override the destination:
 
 ```sh
 ./build.sh /usr/local/bin      # install elsewhere
 ./build.sh -b mytool /opt/bin  # override the binary name
+./build.sh --dry-run           # vet, test and build, then delete the binary
 ```
 
 ### Binary packages

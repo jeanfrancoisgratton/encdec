@@ -2,12 +2,12 @@
 # Packager: Package builder <builder@famillegratton.net>
 
 pkgname=encdec
-pkgver=1.6.1
+pkgver=1.7.0
 pkgrel=1
-pkgdesc="BASE64 encoding/decoding tool"
+pkgdesc="Encode/decode a file, string or directory"
 arch=('x86_64')
 url="https://git.famillegratton.net:3000/mainline/encdec.git"
-license=('GPL-2.0-only')
+license=('GPL-3.0-or-later')
 
 makedepends=('go')
 depends=()
@@ -33,13 +33,13 @@ build() {
   export GOPATH="${srcdir}/gopath"
   export GOMODCACHE="${GOPATH}/pkg/mod"
 
-  go build -trimpath -mod=readonly -modcacherw -ldflags="-s -w -buildid=" -o "${_binaryname}" .
-}
-
-check() {
-  cd "${srcdir}/${_builddir}"
-
+  go vet -modcacherw ./...
   go test -modcacherw ./...
+
+  MODPATH=$(go list -m)
+  BUILDDATE=$(date -u +%Y-%m-%d)
+
+  go build -trimpath -mod=readonly -modcacherw -ldflags="-s -w -buildid= -X ${MODPATH}/cmd.buildVersion=${pkgver} -X ${MODPATH}/cmd.buildDate=${BUILDDATE}" -o "${_binaryname}" .
 }
 
 package() {

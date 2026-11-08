@@ -40,7 +40,11 @@ func decode(source, dest string) *ce.CustomError {
 		fmt.Println(hftx.InProgressSign("Decoding " + source))
 	}
 
-	if err := hf.DecodeFile(source, dest, Passphrase); err != nil {
+	decodeFile := hf.DecodeFile
+	if UseGCM {
+		decodeFile = hf.DecryptFile
+	}
+	if err := decodeFile(source, dest, Passphrase); err != nil {
 		return &ce.CustomError{Title: "Error decoding file", Message: err.Error()}
 	}
 

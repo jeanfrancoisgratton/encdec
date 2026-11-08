@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-# msggw — bump the software version everywhere it needs to be typed by
+# encdec — bump the software version everywhere it needs to be typed by
 # hand, and reset every distro's independent release counter to 1.
 #
 # Version and release are different things (see docs/CHANGELOG.md history /
@@ -13,25 +13,22 @@
 #
 # src/cmd/root.go needs no edit: it reads its version via -ldflags -X at
 # build time from whichever file below is authoritative for that build.
-# __windows and __macos need no edit either: __windows/Makefile reads
-# msggw.json straight via jq, and __macos/build-macos.sh reads it via sed,
-# same as src/build.sh — so bumping msggw.json alone is enough for both.
 
 set -eu
 
 SCRIPT_DIR="$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd)"
 cd "$SCRIPT_DIR"
 
-TARGETS="msggw.json __alpine/APKBUILD __archlinux/PKGBUILD __debian/control __redhat/msggw.spec"
+TARGETS="encdec.json __alpine/APKBUILD __archlinux/PKGBUILD __debian/control __redhat/encdec.spec"
 
 print_usage() {
   cat <<EOF
 Usage: $0 <new-version>   (e.g. $0 1.3.2)
 
-Bumps the software version in msggw.json and every __*/ packaging
-file, and resets each distro's independent release counter to 1. The
-version must start with a digit and contain only [A-Za-z0-9._~-] (no "v"
-prefix, no flags).
+Bumps the software version in encdec.json and every __*/ packaging file,
+and resets each distro's independent release counter to 1. The version
+must start with a digit and contain only [A-Za-z0-9._~-] (no "v" prefix,
+no flags).
 EOF
 }
 
@@ -107,13 +104,13 @@ verify() {
   grep -qF -- "$2" "$1" || die "expected to find '$2' in $1 after patching — its format may have changed; check 'git diff' before re-running."
 }
 
-echo "Bumping msggw to version $NEWVERSION (release reset to 1 on every distro)"
+echo "Bumping encdec to version $NEWVERSION (release reset to 1 on every distro)"
 
-patch msggw.json \
+patch encdec.json \
   "s/\"versionnumber\": *\"[^\"]*\"/\"versionnumber\": \"$NEWVERSION\"/
    s/\"defaultreleasenumber\": *\"[^\"]*\"/\"defaultreleasenumber\": \"1\"/"
-verify msggw.json "\"versionnumber\": \"$NEWVERSION\""
-verify msggw.json "\"defaultreleasenumber\": \"1\""
+verify encdec.json "\"versionnumber\": \"$NEWVERSION\""
+verify encdec.json "\"defaultreleasenumber\": \"1\""
 
 patch __alpine/APKBUILD \
   "s/^pkgver=.*/pkgver=$NEWVERSION/
@@ -127,11 +124,11 @@ patch __archlinux/PKGBUILD \
 verify __archlinux/PKGBUILD "pkgver=$NEWVERSION"
 verify __archlinux/PKGBUILD "pkgrel=1"
 
-patch __redhat/msggw.spec \
+patch __redhat/encdec.spec \
   "s/^%define _version .*/%define _version $NEWVERSION/
    s/^%define _rel .*/%define _rel 1/"
-verify __redhat/msggw.spec "%define _version $NEWVERSION"
-verify __redhat/msggw.spec "%define _rel 1"
+verify __redhat/encdec.spec "%define _version $NEWVERSION"
+verify __redhat/encdec.spec "%define _rel 1"
 
 patch __debian/control \
   "s/^Version: .*/Version: $NEWVERSION-1/"
@@ -139,11 +136,10 @@ verify __debian/control "Version: $NEWVERSION-1"
 
 echo
 echo "Changed:"
-grep -H '"versionnumber"\|"defaultreleasenumber"' msggw.json
+grep -H '"versionnumber"\|"defaultreleasenumber"' encdec.json
 grep -H '^pkgver=\|^pkgrel=' __alpine/APKBUILD
 grep -H '^pkgver=\|^pkgrel=' __archlinux/PKGBUILD
 grep -H '^Version:' __debian/control
-grep -H '^%define _version\|^%define _rel' __redhat/msggw.spec
+grep -H '^%define _version\|^%define _rel' __redhat/encdec.spec
 echo
-echo "Nothing else to edit by hand — src/cmd/root.go picks this up via -ldflags at build time,"
-echo "and __windows/Makefile + __macos/build-macos.sh both read msggw.json directly."
+echo "Nothing else to edit by hand — src/cmd/root.go picks this up via -ldflags at build time."

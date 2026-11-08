@@ -31,7 +31,7 @@ DEB       := $(CURDIR)/$(STAGING).deb
 
 build:
 	rm -rf "$(STAGING)"
-	install -d "$(STAGING)/DEBIAN" "$(STAGING)/opt/sbin" "$(STAGING)/usr/share/doc/$(NAME)"
+	install -d "$(STAGING)/DEBIAN" "$(STAGING)/opt/bin" "$(STAGING)/usr/share/doc/$(NAME)"
 	cp control "$(STAGING)/DEBIAN/"
 	# copyright is documentation, not a control file: policy puts it at
 	# /usr/share/doc/<package>/copyright, and it must be 0644 there.
@@ -41,7 +41,8 @@ build:
 	# files and only fails on an actual test failure.
 	cd $(SRCDIR) && go vet ./...
 	cd $(SRCDIR) && go test ./...
-	cd $(SRCDIR) && CGO_ENABLED=0 go build -trimpath -ldflags="-s -w -buildid= -X msggw/cmd.buildVersion=$(UPSTREAM_VERSION) -X msggw/cmd.buildDate=$(BUILDDATE)" \
+	cd $(SRCDIR) && MODPATH=$$(go list -m) && BUILDVER=$$(echo $(VERSION) | sed 's/-[^-]*$$//') && \
+	  CGO_ENABLED=0 go build -trimpath -ldflags="-s -w -buildid= -X $${MODPATH}/cmd.buildVersion=$${BUILDVER} -X $${MODPATH}/cmd.buildDate=$$(date -u +%Y-%m-%d)" \
 	  -o "$(CURDIR)/$(STAGING)/opt/bin/$(BINARY)" .
 	sudo chown -R 0:0 "$(STAGING)/opt/bin/$(BINARY)"
 	dpkg-deb -b "$(STAGING)" "$(DEB)"

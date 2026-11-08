@@ -42,7 +42,11 @@ func encode(source, dest string) *ce.CustomError {
 		fmt.Println(hftx.InProgressSign(fmt.Sprintf("Enconding %s", source)))
 	}
 
-	if err := hf.EncodeFile(source, dest, Passphrase); err != nil {
+	encodeFile := hf.EncodeFile
+	if UseGCM {
+		encodeFile = hf.EncryptFile
+	}
+	if err := encodeFile(source, dest, Passphrase); err != nil {
 		return &ce.CustomError{Title: "Error encoding file", Message: err.Error()}
 	}
 

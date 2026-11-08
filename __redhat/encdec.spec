@@ -2,7 +2,7 @@
 %define _build_id_links none
 %define _name   encdec
 %define _prefix /opt
-%define _version 1.6.1
+%define _version 1.7.0
 %define _rel 1
 %define _arch x86_64
 %define _binaryname encdec
@@ -10,10 +10,10 @@
 Name:       encdec
 Version:    %{_version}
 Release:    %{_rel}
-Summary:    encdec
+Summary:    Encode/decode a file, string or directory
 
 Group:      SSL
-License:    GPL2.0
+License:    GPL-3.0-or-later
 URL:        https://github.com/jeanfrancoisgratton/encdec
 
 Source0:    %{name}-%{_version}.tar.gz
@@ -28,7 +28,12 @@ Encode and decode AES-256 strings and files
 
 %build
 cd src
-CGO_ENABLED=0 /opt/go/bin/go build -trimpath -ldflags="-s -w -buildid=" -o %{_builddir}/%{name}-%{version}/%{_binaryname} .
+go mod download
+PATH=$PATH:/opt/go/bin go vet ./...
+PATH=$PATH:/opt/go/bin go test ./...
+MODPATH=$(PATH=$PATH:/opt/go/bin go list -m)
+BUILDDATE=$(date -u +%Y-%m-%d)
+PATH=$PATH:/opt/go/bin CGO_ENABLED=0 go build -trimpath -ldflags="-s -w -buildid= -X ${MODPATH}/cmd.buildVersion=%{_version} -X ${MODPATH}/cmd.buildDate=${BUILDDATE}" -o %{_builddir}/%{name}-%{version}/%{_binaryname} .
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -41,15 +46,14 @@ rm -rf %{buildroot}
 install -Dpm 0755 %{_builddir}/%{name}-%{version}/%{_binaryname} %{buildroot}%{_bindir}/%{_binaryname}
 
 %post
-BIN="%{_prefix}/bin/%{_binaryname}"
 
 %preun
 
 %postun
 
 %files
-%defattr(-,root,root,-)
-%attr(2755,root,root) %{_prefix}/bin/%{_binaryname}
+%defattr(0755,root,root,-)
+%{_bindir}/%{_binaryname}
 
 
 

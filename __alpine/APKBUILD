@@ -1,14 +1,14 @@
 # Maintainer: Jean-Francois Gratton <jean-francois@famillegratton.net>
 # PACKAGER: APK Builder <builder@famillegratton.net>
 pkgname=encdec
-pkgver=1.6.1
+pkgver=1.7.0
 pkgrel=1
 pkgdir=/data/packages
 builddir="$startdir/src/BUILD"
-pkgdesc="Small tool to encode/decode strings"
+pkgdesc="Encode/decode a file, string or directory"
 url="https://github.com/jeanfrancoisgratton/encdec"
 arch=x86_64
-license=GPL2
+license="GPL-3.0-or-later"
 depends="gcompat"
 #install="$pkgname.post-install"
 #source="$pkgname-$pkgver-$pkgrel.tar.bz2::http://localhost/$pkgname-$pkgver-$pkgrel.tar.bz2"
@@ -24,8 +24,14 @@ build() {
 
 	go env | egrep 'GOFLAGS|CGO_ENABLED|GOOS|GOARCH' || true
 
+	go vet ./...
+	go test ./...
+
+	MODPATH=$(go list -m)
+	BUILDDATE=$(date -u +%Y-%m-%d)
+
 	# Static, non-PIE, internal linker
-	go build -trimpath -ldflags="-s -w -buildid= -linkmode=internal" -o "$binaryname" .
+	go build -trimpath -ldflags="-s -w -buildid= -linkmode=internal -X ${MODPATH}/cmd.buildVersion=$pkgver -X ${MODPATH}/cmd.buildDate=$BUILDDATE" -o "$binaryname" .
 }
 
 package() {

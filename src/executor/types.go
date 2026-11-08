@@ -26,3 +26,9 @@ var Force = false
 var FileOps = false
 var DirectoryOps = false
 var DEBUG = false
+
+// UseGCM (-g, --gcm) selects AES-256-GCM: helperFunctions' Encrypt*/Decrypt*
+// instead of the legacy Encode*/Decode*, which remain the default. The two
+// formats are not interchangeable: data encrypted with one won't decrypt with
+// the other.
+var UseGCM = false

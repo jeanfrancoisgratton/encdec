@@ -10,6 +10,39 @@ Earlier releases used a `major.minor.patch` scheme with zero-padded fields (`1.3
 Entries up to and including 1.21.03 were reconstructed from the RPM `%changelog` in
 `__redhat/encdec.spec`; the current git repository only goes back to 2025-09-09.
 
+## [1.7.0] — 2026-11-08
+
+### Added
+- `-g` / `--gcm`, to encrypt and decrypt with AES-256-GCM (key derived with Argon2id) instead of
+  the default AES-256-CFB. It applies to string, file and directory modes. GCM is authenticated:
+  a wrong passphrase or tampered data is now reported as an error instead of yielding garbage.
+  The two formats are not interchangeable, and GCM is slower (one Argon2id key derivation per
+  string or file). Without `-g`, behaviour is unchanged.
+- Unit tests for GCM mode (strings, files, directories, wrong passphrase, tampering, and
+  incompatibility with the default format).
+
+### Changed
+- Build dependencies updated (`helperFunctions` to v5.9.0, which provides the GCM functions).
+- `version-bump.sh` bumps the version in `encdec.json` and in every packaging file in one go.
+- Windows packaging is disabled for this release.
+- `src/build.sh` and every packaging recipe now run `go vet` and `go test` before building, and
+  inject the version and build date at link time. `build.sh` gained a `--dry-run` option.
+- `encode`/`decode` help reworked: explicit synopses and examples for every mode.
+- Package licence metadata corrected to GPL-3.0-or-later, matching `docs/LICENSE`.
+- Build workflow aligned with the other tools: the RPM `make release` now records the `%changelog`
+  entry on `develop` (pushed straight to `origin/develop`) instead of committing it on the built
+  branch and pushing that branch, and refuses versions that would not make a valid git tag.
+  The build-container provisioning scripts were refreshed as well (`__debian/install_build_deps.sh`
+  is now `install-build-deps.sh`).
+
+### Fixed
+- `encdec version` reported a hardcoded `v1.6.0 (2026.09.03)`; it now shows the version and build
+  date of the package it comes from (`dev (unknown)` for a plain `go build`).
+- The Debian package build referenced the wrong Go module and undefined variables, and created
+  `/opt/sbin` while installing to `/opt/bin`.
+- The RPM no longer installs the binary setgid.
+
+
 ## [1.6.1] — 2026-10.13
 ### Changed
 - Upgraded to GO v1.27.2

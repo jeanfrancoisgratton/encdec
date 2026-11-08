@@ -65,8 +65,11 @@ INSTALLDIR := C:\\utils
 build:
 	rm -rf "$(STAGING)"
 	install -d "$(STAGING)"
-	cd $(SRCDIR) && CGO_ENABLED=0 GOOS=windows GOARCH=$(ARCH) go build -trimpath \
-	  -ldflags="-s -w -buildid=" -o "$(CURDIR)/$(STAGING)/$(BINARY).exe" .
+	cd $(SRCDIR) && go vet ./... && go test ./...
+	cd $(SRCDIR) && MODPATH=$$(go list -m) && \
+	  CGO_ENABLED=0 GOOS=windows GOARCH=$(ARCH) go build -trimpath \
+	  -ldflags="-s -w -buildid= -X $${MODPATH}/cmd.buildVersion=$(VERSION) -X $${MODPATH}/cmd.buildDate=$$(date -u +%Y-%m-%d)" \
+	  -o "$(CURDIR)/$(STAGING)/$(BINARY).exe" .
 	wixl -D ProductName=$(NAME) -D ProductVersion=$(MSIVERSION) \
 	  -D Manufacturer=$(MANUFACTURER) -D "Description=$(DESCRIPTION)" \
 	  -D Staging=$(STAGING) -D BinaryName=$(BINARY) -D InstallDir=$(INSTALLDIR) \
