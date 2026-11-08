@@ -3,7 +3,7 @@
   "binaryname": "encdec",
   "goversion": "1.27.2",
   "versionnumber": "1.6.1",
-  "releasenumber": "1",
+  "defaultreleasenumber": "1",
   "description": "Encode/decode a file, string or directory",
   "maintainer": "J.F. Gratton <jean-francois@famillegratton.net>",
   "packager": "Package builder <builder@famillegratton.net>",
