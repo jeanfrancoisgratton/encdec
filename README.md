@@ -35,6 +35,9 @@ two schemes:
 Either way the result is emitted as standard Base64. Encrypted files are therefore Base64
 *text*, not raw binary, and are written with `0600` permissions.
 
+>**IMPORTANT NOTE:**<br>
+>For now, the default is to use AES-256-CFB (the _weakest_ scheme, as mentioned above, _but in a future version_ I will swap the behaviour: the stronger AES-256-GCM scheme will become the default scheme to use, while AES-256-CFB will need to be explicitely asked for.
+
 ## Usage
 
 ```
